@@ -273,19 +273,19 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="lupa-bg-primary text-white py-12">
+      <footer className="text-black py-6" style={{ backgroundColor: '#f5f3ff' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
-              <svg class="h-8 w-8 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div className="flex items-center justify-center mb-3">
+              <svg class="h-6 w-6 text-black mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
   <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
 </svg>
-              <span className="ml-2 text-xl font-bold">LuPA</span>
+              <span className="ml-2 text-lg font-bold">LuPA</span>
             </div>
-            <p className="text-gray-400 mb-4">
+            <p className="text-gray-600 mb-3 text-sm">
               Simplificando a gestão financeira para pequenos e médios negócios
             </p>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-xs">
               © 2025 LuPA. Todos os direitos reservados.
             </p>
           </div>

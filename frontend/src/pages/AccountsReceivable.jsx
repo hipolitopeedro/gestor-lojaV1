@@ -296,28 +296,30 @@ const AccountsReceivable = ({ onNavigate }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => onNavigate('dashboard')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Dashboard
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                <Users className="w-6 h-6 mr-2 text-blue-600" />
-                Contas a Receber
-              </h1>
-              <p className="text-gray-600">Gerencie fiados, máquinas e faturas</p>
+        <div style={{ backgroundColor: '#8b5cf6' }} className="p-6 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" onClick={() => onNavigate('dashboard')} className="border-white bg-white text-black hover:bg-gray-100">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-white flex items-center">
+                  <Users className="w-6 h-6 mr-2 text-white" />
+                  Contas a Receber
+                </h1>
+                <p className="text-white/80">Gerencie fiados, máquinas e faturas</p>
+              </div>
             </div>
-          </div>
-          <div className="flex space-x-2">
-            <Button onClick={() => setShowAddReceivable(true)} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Conta
-            </Button>
+            <div className="flex space-x-2">
+              <Button onClick={() => setShowAddReceivable(true)} className="bg-white text-purple-600 hover:bg-gray-100">
+                <Plus className="w-4 h-4 mr-2" />
+                Nova Conta
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -633,7 +635,7 @@ const AddReceivableForm = ({ onBack, onSave }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
@@ -818,7 +820,7 @@ const AddPaymentForm = ({ receivable, onBack, onSave }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
@@ -838,7 +840,7 @@ const AddPaymentForm = ({ receivable, onBack, onSave }) => {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Receivable Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-white p-4 rounded-lg border">
               <h3 className="font-medium mb-2">Informações da Conta</h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>

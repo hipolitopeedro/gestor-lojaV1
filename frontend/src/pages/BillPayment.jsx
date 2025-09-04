@@ -195,32 +195,34 @@ const BillPayment = ({ onNavigate }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => onNavigate('dashboard')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Dashboard
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                <Receipt className="w-6 h-6 mr-2 text-blue-600" />
-                Pagamento de Boletos
-              </h1>
-              <p className="text-gray-600">Gerencie e pague suas contas</p>
+        <div style={{ backgroundColor: '#8b5cf6' }} className="p-6 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" onClick={() => onNavigate('dashboard')} className="border-white bg-white text-black hover:bg-gray-100">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-white flex items-center">
+                  <Receipt className="w-6 h-6 mr-2 text-white" />
+                  Pagamento de Boletos
+                </h1>
+                <p className="text-white/80">Gerencie e pague suas contas</p>
+              </div>
             </div>
-          </div>
-          <div className="flex space-x-2">
-            <Button onClick={() => setShowBarcodeScanner(true)} className="bg-purple-600 hover:bg-purple-700">
-              <Scan className="w-4 h-4 mr-2" />
-              Escanear Código
-            </Button>
-            <Button onClick={() => setShowAddBill(true)} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Conta
-            </Button>
+            <div className="flex space-x-2">
+              <Button onClick={() => setShowBarcodeScanner(true)} className="bg-white text-purple-600 hover:bg-gray-100">
+                <Scan className="w-4 h-4 mr-2" />
+                Escanear Código
+              </Button>
+              <Button onClick={() => setShowAddBill(true)} className="bg-white text-purple-600 hover:bg-gray-100">
+                <Plus className="w-4 h-4 mr-2" />
+                Nova Conta
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -436,7 +438,7 @@ const AddBillForm = ({ onBack, onSave }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
@@ -580,7 +582,7 @@ const BarcodeScanner = ({ onBack, onScan }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>

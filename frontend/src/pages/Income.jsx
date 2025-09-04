@@ -98,27 +98,27 @@ const Income = ({ onNavigate }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: '#f5f3ff' }}>
       {/* Header */}
-      <div className="bg-white border-b">
+      <div style={{ backgroundColor: '#8b5cf6' }} className="border-b">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                <Receipt className="h-6 w-6 mr-2 text-green-600" />
+              <h1 className="text-2xl font-bold text-white flex items-center">
+                <Receipt className="h-6 w-6 mr-2 text-white" />
                 Entradas
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-white/80 mt-1">
                 Gerencie todas as entradas do seu negócio
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600">Olá, {user?.username}</p>
+              <p className="text-sm text-white">Olá, Demo User</p>
               <Button
-                onClick={() => window.navigateTo('dashboard')}
+                onClick={() => onNavigate('dashboard')}
                 variant="outline"
                 size="sm"
-                className="mt-1"
+                className="mt-1 border-white bg-white text-black hover:bg-gray-100"
               >
                 <BarChart3 className="h-4 w-4 mr-2" />
                 Dashboard
