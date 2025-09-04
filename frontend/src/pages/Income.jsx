@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import SimpleTransactionList from '@/components/transactions/SimpleTransactionList';
 import SimpleTransactionForm from '@/components/transactions/SimpleTransactionForm';
 import { Button } from '@/components/ui/button';
@@ -15,8 +14,7 @@ import {
   BarChart3
 } from 'lucide-react';
 
-const Income = () => {
-  const { user } = useAuth();
+const Income = ({ onNavigate }) => {
   const [currentView, setCurrentView] = useState('list'); // 'list', 'add', 'edit'
   const [editingTransaction, setEditingTransaction] = useState(null);
 

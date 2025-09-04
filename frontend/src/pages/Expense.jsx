@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import SimpleTransactionList from '@/components/transactions/SimpleTransactionList';
 import SimpleTransactionForm from '@/components/transactions/SimpleTransactionForm';
 import { Button } from '@/components/ui/button';
@@ -16,8 +15,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
-const Expense = () => {
-  const { user } = useAuth();
+const Expense = ({ onNavigate }) => {
   const [currentView, setCurrentView] = useState('list'); // 'list', 'add', 'edit'
   const [editingTransaction, setEditingTransaction] = useState(null);
 

@@ -16,7 +16,7 @@ import {
   X
 } from 'lucide-react';
 
-const LandingPage = ({ onShowAuth }) => {
+const LandingPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const features = [
@@ -78,10 +78,17 @@ const LandingPage = ({ onShowAuth }) => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => window.navigateTo("dashboard")}>
+              <Button 
+                variant="ghost" 
+                className="text-white hover:bg-white/10"
+                onClick={() => window.navigateTo("login")}
+              >
                 Login
               </Button>
-              <Button onClick={() => window.navigateTo("dashboard")}>
+              <Button 
+                className="bg-white text-black hover:bg-gray-100"
+                onClick={() => window.navigateTo("register")}
+              >
                 Cadastre-se
               </Button>
             </div>
@@ -104,18 +111,18 @@ const LandingPage = ({ onShowAuth }) => {
               <div className="flex flex-col space-y-2">
                 <Button 
                   variant="ghost" 
-                  className="justify-start"
+                  className="justify-start text-white hover:bg-white/10"
                   onClick={() => {
-                    window.navigateTo("dashboard");
+                    window.navigateTo("login");
                     setMobileMenuOpen(false);
                   }}
                 >
                   Login
                 </Button>
                 <Button 
-                  className="justify-start"
+                  className="justify-start bg-white text-black hover:bg-gray-100"
                   onClick={() => {
-                    window.navigateTo("dashboard");
+                    window.navigateTo("register");
                     setMobileMenuOpen(false);
                   }}
                 >
@@ -143,7 +150,7 @@ const LandingPage = ({ onShowAuth }) => {
               <Button 
                 size="lg" 
                 className="text-lg px-8 py-3"
-                onClick={() => window.navigateTo("dashboard")}
+                onClick={() => window.navigateTo("register")}
               >
                 Começar Gratuitamente
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -152,7 +159,7 @@ const LandingPage = ({ onShowAuth }) => {
                 variant="outline" 
                 size="lg" 
                 className="text-lg px-8 py-3"
-                onClick={() => window.navigateTo("dashboard")}
+                onClick={() => window.navigateTo("login")}
               >
                 Já tenho conta
               </Button>
@@ -257,7 +264,7 @@ const LandingPage = ({ onShowAuth }) => {
             size="lg" 
             variant="secondary"
             className="text-lg px-8 py-3 bg-white text-blue-600 hover:bg-gray-50"
-            onClick={() => onShowAuth('register')}
+            onClick={() => window.navigateTo("register")}
           >
             Começar Agora - É Grátis
             <ArrowRight className="ml-2 h-5 w-5" />

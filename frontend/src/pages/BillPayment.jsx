@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +19,6 @@ import {
 } from 'lucide-react';
 
 const BillPayment = ({ onNavigate }) => {
-  const { user } = useAuth();
   const [bills, setBills] = useState([]);
   const [summary, setSummary] = useState({});
   const [showAddBill, setShowAddBill] = useState(false);

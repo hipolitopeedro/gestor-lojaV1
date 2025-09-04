@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,7 +42,6 @@ import {
 } from 'lucide-react';
 
 const Dashboard = ({ onNavigate }) => {
-  const { user, logout } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -144,9 +142,9 @@ const Dashboard = ({ onNavigate }) => {
             
             <div className="flex items-center space-x-4">
               <span className="text-sm text-white">
-                Olá, <span className="font-medium">{user?.username}</span>
+                Olá, <span className="font-medium">Demo User</span>
               </span>
-              <Button variant="outline" size="sm" onClick={logout}>
+              <Button variant="outline" size="sm" onClick={() => onNavigate('landing')}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </Button>
