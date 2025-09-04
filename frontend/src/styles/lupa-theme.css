@@ -1,0 +1,227 @@
+/* LuPA - Lucro e Performance em Análise - Custom Theme */
+
+:root {
+  /* LuPA Color Palette */
+  --lupa-primary: #8b5cf6;      /* Lavanda - Cor principal */
+  --lupa-background: #f5f3ff;   /* Cinza Lavanda - Background suave */
+  --lupa-success: #34d399;      /* Verde Água - Indicadores positivos */
+  --lupa-warning: #fb923c;      /* Pêssego - Informações importantes neutras */
+  --lupa-danger: #fb7185;       /* Coral - Alertas e despesas */
+  
+  /* Variações da cor principal */
+  --lupa-primary-50: #faf5ff;
+  --lupa-primary-100: #f3e8ff;
+  --lupa-primary-200: #e9d5ff;
+  --lupa-primary-300: #d8b4fe;
+  --lupa-primary-400: #c084fc;
+  --lupa-primary-500: #8b5cf6;
+  --lupa-primary-600: #7c3aed;
+  --lupa-primary-700: #6d28d9;
+  --lupa-primary-800: #5b21b6;
+  --lupa-primary-900: #4c1d95;
+}
+
+/* Aplicar tema LuPA */
+.lupa-bg-primary { background-color: var(--lupa-primary); }
+.lupa-bg-background { background-color: var(--lupa-background); }
+.lupa-bg-success { background-color: var(--lupa-success); }
+.lupa-bg-warning { background-color: var(--lupa-warning); }
+.lupa-bg-danger { background-color: var(--lupa-danger); }
+
+.lupa-text-primary { color: var(--lupa-primary); }
+.lupa-text-success { color: var(--lupa-success); }
+.lupa-text-warning { color: var(--lupa-warning); }
+.lupa-text-danger { color: var(--lupa-danger); }
+
+.lupa-border-primary { border-color: var(--lupa-primary); }
+.lupa-border-success { border-color: var(--lupa-success); }
+.lupa-border-warning { border-color: var(--lupa-warning); }
+.lupa-border-danger { border-color: var(--lupa-danger); }
+
+/* Gradientes LuPA */
+.lupa-gradient-primary {
+  background: linear-gradient(135deg, var(--lupa-primary), var(--lupa-primary-700));
+}
+
+.lupa-gradient-success {
+  background: linear-gradient(135deg, var(--lupa-success), #10b981);
+}
+
+.lupa-gradient-card {
+  background: linear-gradient(135deg, var(--lupa-background), #ffffff);
+}
+
+/* Botões LuPA */
+.lupa-btn-primary {
+  background-color: var(--lupa-primary);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.lupa-btn-primary:hover {
+  background-color: var(--lupa-primary-600);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.lupa-btn-success {
+  background-color: var(--lupa-success);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.lupa-btn-success:hover {
+  background-color: #10b981;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3);
+}
+
+.lupa-btn-warning {
+  background-color: var(--lupa-warning);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.lupa-btn-warning:hover {
+  background-color: #ea580c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(251, 146, 60, 0.3);
+}
+
+/* Cards LuPA */
+.lupa-card {
+  background: var(--lupa-background);
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.lupa-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+.lupa-card-header {
+  background: linear-gradient(135deg, var(--lupa-primary), var(--lupa-primary-600));
+  color: white;
+  border-radius: 12px 12px 0 0;
+  padding: 1rem;
+}
+
+/* Métricas financeiras */
+.lupa-metric-positive {
+  color: var(--lupa-success);
+  background-color: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.lupa-metric-negative {
+  color: var(--lupa-danger);
+  background-color: rgba(251, 113, 133, 0.1);
+  border: 1px solid rgba(251, 113, 133, 0.2);
+}
+
+.lupa-metric-neutral {
+  color: var(--lupa-warning);
+  background-color: rgba(251, 146, 60, 0.1);
+  border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+/* Navegação LuPA */
+.lupa-nav {
+  background: linear-gradient(135deg, var(--lupa-background), #ffffff);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.lupa-nav-item {
+  color: var(--lupa-primary);
+  transition: all 0.3s ease;
+}
+
+.lupa-nav-item:hover {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--lupa-primary-700);
+}
+
+/* Formulários LuPA */
+.lupa-input {
+  border: 2px solid rgba(139, 92, 246, 0.2);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.lupa-input:focus {
+  border-color: var(--lupa-primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  outline: none;
+}
+
+/* Badges LuPA */
+.lupa-badge-success {
+  background-color: rgba(52, 211, 153, 0.2);
+  color: #065f46;
+  border: 1px solid var(--lupa-success);
+}
+
+.lupa-badge-warning {
+  background-color: rgba(251, 146, 60, 0.2);
+  color: #9a3412;
+  border: 1px solid var(--lupa-warning);
+}
+
+.lupa-badge-danger {
+  background-color: rgba(251, 113, 133, 0.2);
+  color: #991b1b;
+  border: 1px solid var(--lupa-danger);
+}
+
+.lupa-badge-primary {
+  background-color: rgba(139, 92, 246, 0.2);
+  color: #4c1d95;
+  border: 1px solid var(--lupa-primary);
+}
+
+/* Animações LuPA */
+@keyframes lupa-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.lupa-pulse {
+  animation: lupa-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes lupa-bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.lupa-bounce {
+  animation: lupa-bounce 1s infinite;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .lupa-card {
+    margin: 0.5rem;
+  }
+  
+  .lupa-nav {
+    padding: 0.5rem;
+  }
+}
+
