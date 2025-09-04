@@ -1,160 +1,163 @@
-# LuPA Financial Management System
+Sistema de Gestão Financeira LuPA
+O LuPA (Lucro e Performance em Análise) é um sistema completo de gestão financeira, criado para ajudar pequenas e médias empresas. Com ele, é possível ver em tempo real as finanças, gerenciar transações e analisar a performance do negócio por uma interface web super intuitiva.
 
-**LuPA** (Lucro e Performance em Análise) is a comprehensive financial management system designed for small to medium businesses. The system provides real-time financial insights, transaction management, and performance analytics through an intuitive web interface.
+🚀 Funcionalidades
+Frontend (React + Tailwind CSS)
 
-## 🚀 Features
+Dashboard Responsivo - Uma visão geral completa das finanças com gráficos e as métricas mais importantes.
 
-### Frontend (React + Tailwind CSS)
-- **Responsive Dashboard** - Complete financial overview with charts and metrics
-- **Sticky Header Navigation** - Quick access to main functions (Income, Expenses, Bills, Receivables)
-- **Real-time Charts** - Financial evolution, expense categories, daily transactions
-- **Mobile Responsive** - Optimized for desktop and mobile devices
-- **Modern UI/UX** - Clean design with purple branding and improved contrast
+Menu Fixo no Topo - Acesso rápido às funções principais (Receitas, Despesas, Contas a Pagar e a Receber).
 
-### Backend (Flask + Python)
-- **Simplified Authentication** - Streamlined user access for demo purposes
-- **RESTful API** - Clean API endpoints for all financial operations
-- **Transaction Management** - Complete CRUD operations for financial records
-- **Bill Payment System** - Manage recurring payments and due dates
-- **Accounts Receivable** - Track customer payments and outstanding amounts
+Gráficos em Tempo Real - Acompanhe a evolução financeira, veja para onde o dinheiro está indo e as transações do dia.
 
-## 🎨 Design System
+Funciona em qualquer tela - Otimizado para funcionar tanto no computador quanto no celular.
 
-### Color Scheme
-- **Background**: `#f5f3ff` (Light lavender)
-- **Primary Brand**: `#8b5cf6` (Purple)
-- **Success/Profits**: `#34d399` (Green)
-- **Expenses**: `#fb7185` (Coral)
-- **Neutral**: `#fb923c` (Orange)
-- **Text**: Black for optimal readability
+Visual Moderno - Um design limpo, com a cor roxa como marca principal e um contraste melhorado para facilitar a leitura.
 
-### Key UI Improvements
-- **Sticky Header**: Always accessible quick actions
-- **Improved Contrast**: Black text on light backgrounds for better readability
-- **Smaller Buttons**: Compact design for better space utilization
-- **Responsive Grid**: Adapts from 4-column (desktop) to 2-column (mobile)
+Backend (Flask + Python)
 
-## 🛠️ Technology Stack
+Autenticação Simplificada - Um sistema de login direto, focado na demonstração do projeto.
 
-### Frontend
-- **React 19** - Modern React with hooks and context
-- **Vite** - Fast build tool and development server
-- **Tailwind CSS** - Utility-first CSS framework
-- **Shadcn/UI** - High-quality component library
-- **Recharts** - Beautiful and responsive charts
-- **Lucide React** - Modern icon library
+API RESTful - Endpoints bem definidos para todas as operações financeiras.
 
-### Backend
-- **Flask** - Lightweight Python web framework
-- **SQLAlchemy** - Database ORM
-- **Flask-CORS** - Cross-origin resource sharing
-- **Python 3.11** - Latest Python features
+Gestão de Transações - Todas as operações de Criar, Ler, Atualizar e Deletar (CRUD) registros financeiros.
 
-## 📁 Project Structure
+Contas a Pagar - Gerencie pagamentos recorrentes e não perca os vencimentos.
 
-```
+Contas a Receber - Acompanhe o que seus clientes precisam pagar.
+
+🎨 Sistema de Design
+Paleta de Cores
+
+Fundo: #f5f3ff (Lavanda claro)
+
+Cor Principal: #8b5cf6 (Roxo)
+
+Sucesso/Lucros: #34d399 (Verde)
+
+Despesas: #fb7185 (Coral)
+
+Neutro: #fb923c (Laranja)
+
+Texto: Preto, para garantir a melhor leitura possível.
+
+Principais Melhorias na Interface
+
+Menu Fixo: As ações rápidas estão sempre visíveis no topo.
+
+Contraste Melhorado: Texto preto sobre fundos claros para facilitar a leitura.
+
+Botões Menores: Design mais compacto para aproveitar melhor o espaço.
+
+Layout Flexível: Se adapta de 4 colunas (desktop) para 2 colunas (celular).
+
+🛠️ Tecnologias Usadas
+Frontend
+
+React 19 - A versão mais moderna do React, com hooks e context.
+
+Vite - Ferramenta super rápida para rodar e construir o projeto.
+
+Tailwind CSS - Framework CSS que agiliza muito a estilização.
+
+Shadcn/UI - Biblioteca de componentes de alta qualidade.
+
+Recharts - Para criar gráficos bonitos e responsivos.
+
+Lucide React - Biblioteca de ícones modernos.
+
+Backend
+
+Flask - Framework web leve em Python.
+
+SQLAlchemy - ORM para conversar com o banco de dados.
+
+Flask-CORS - Para permitir a comunicação entre o front e o back.
+
+Python 3.11 - Usando as features mais recentes do Python.
+
+📁 Estrutura do Projeto
 lupa-financial-system/
-├── frontend/                 # React frontend application
+├── frontend/                 # Aplicação frontend em React
 │   ├── src/
-│   │   ├── components/      # Reusable UI components
-│   │   ├── pages/          # Main application pages
-│   │   ├── contexts/       # React context providers
-│   │   ├── styles/         # Custom CSS and themes
-│   │   └── lib/           # Utility functions
+│   │   ├── components/      # Componentes reutilizáveis (botões, cards, etc.)
+│   │   ├── pages/          # As páginas principais do sistema
+│   │   ├── contexts/       # Para compartilhar estado global
+│   │   ├── styles/         # CSS customizado e temas
+│   │   └── lib/           # Funções úteis
 │   ├── package.json
 │   └── vite.config.js
-├── backend/                 # Flask backend API
+├── backend/                 # API backend em Flask
 │   ├── src/
-│   │   ├── routes/         # API endpoints
-│   │   ├── models/         # Database models
-│   │   ├── utils/          # Helper functions
-│   │   └── static/         # Built frontend files
+│   │   ├── routes/         # As rotas da API (endpoints)
+│   │   ├── models/         # Os modelos do banco de dados
+│   │   ├── utils/          # Funções de ajuda
+│   │   └── static/         # Arquivos do frontend (após o build)
 │   ├── requirements.txt
 │   └── main.py
 └── README.md
-```
+🚀 Como Começar
+Pré-requisitos
 
-## 🚀 Getting Started
+Node.js 20+ e npm/pnpm
 
-### Prerequisites
-- Node.js 20+ and npm/pnpm
-- Python 3.11+
-- Git
+Python 3.11+
 
-### Frontend Setup
-```bash
+Git
+
+Configurando o Frontend
+
+Bash
+
 cd frontend
 npm install
 npm run dev
-```
+Configurando o Backend
 
-### Backend Setup
-```bash
+Bash
+
 cd backend
 pip install -r requirements.txt
 python src/main.py
-```
+Gerando a Versão de Produção (para deploy)
 
-### Build for Production
-```bash
+Bash
+
 cd frontend
 npm run build
-```
+📈 Principais Métricas Analisadas
+Receita Total - Acompanhamento completo do que entra.
 
-## 📱 Screenshots
+Despesas Totais - Gestão total do que sai.
 
-### Desktop Dashboard
-- Full-width layout with comprehensive financial metrics
-- Interactive charts and real-time data visualization
-- Sticky header with quick action buttons
+Lucro Líquido - Cálculos de lucro em tempo real.
 
-### Mobile Interface
-- Responsive 2x2 grid layout for quick actions
-- Touch-friendly interface elements
-- Optimized typography and spacing
+Margem de Lucro - A porcentagem de performance do negócio.
 
-## 🔧 Configuration
+Clientes Ativos - Acompanhamento de clientes.
 
-### Environment Variables
-- Development server runs on `http://localhost:5173`
-- Backend API available at `http://localhost:5000`
-- CORS enabled for cross-origin requests
+Contas Pendentes - Gestão de datas de vencimento.
 
-### Customization
-- Colors can be modified in `frontend/src/styles/lupa-theme.css`
-- Component styling uses Tailwind CSS classes
-- Charts and data visualization via Recharts library
+Pagamentos Atrasados - O que ainda não foi recebido.
 
-## 📈 Key Metrics Tracked
+Crescimento Mensal - Análise de tendência da performance.
 
-- **Revenue Total** - Complete income tracking
-- **Total Expenses** - Comprehensive expense management
-- **Net Profit** - Real-time profit calculations
-- **Profit Margin** - Performance percentage metrics
-- **Active Customers** - Customer relationship tracking
-- **Pending Bills** - Payment due date management
-- **Overdue Payments** - Outstanding receivables
-- **Monthly Growth** - Performance trend analysis
+🎯 Últimas Atualizações
+Versão 1.0 (Mais Recente)
 
-## 🎯 Recent Updates
+✅ Implementado menu fixo com ações rápidas.
 
-### Version 1.0 (Latest)
-- ✅ Implemented sticky header with quick actions
-- ✅ Updated button styling with black text for better readability
-- ✅ Reduced button size for more compact design
-- ✅ Improved mobile responsiveness
-- ✅ Enhanced color contrast throughout the application
-- ✅ Fixed JSX syntax issues and cleaned up duplicate code
+✅ Botões atualizados com texto preto para melhor leitura.
 
-## 🤝 Contributing
+✅ Tamanho dos botões reduzido para um design mais compacto.
 
-This is a private project for business financial management. For questions or support, please contact the development team.
+✅ Melhorada a responsividade para celulares.
 
-## 📄 License
+✅ Aprimorado o contraste de cores em toda a aplicação.
 
-Private project - All rights reserved.
+✅ Corrigidos problemas de sintaxe e código duplicado.
 
----
+🤝 Contribuição
+Este é um projeto acadêmico para a matéria de Projeto Interdisciplinar (PIN). Para dúvidas ou sugestões, fale com a equipe!
 
-**LuPA Financial Management System** - Transforming financial data into actionable business insights.
-
+Sistema de Gestão Financeira LuPA - Transformando dados financeiros em inteligência de negócio.
