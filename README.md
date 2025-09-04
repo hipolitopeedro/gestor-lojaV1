@@ -1,4 +1,5 @@
 Sistema de Gestão Financeira LuPA
+
 O LuPA (Lucro e Performance em Análise) é um sistema completo de gestão financeira, criado para ajudar pequenas e médias empresas. Com ele, é possível ver em tempo real as finanças, gerenciar transações e analisar a performance do negócio por uma interface web super intuitiva.
 
 🚀 Funcionalidades
