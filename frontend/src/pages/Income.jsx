@@ -20,12 +20,12 @@ const Income = ({ onNavigate }) => {
 
   // Mock summary data
   const summaryData = {
-    totalIncome: 15750.80,
-    monthlyGrowth: 12.5,
-    transactionCount: 23,
-    averageTransaction: 684.38,
-    topCategory: 'Vendas',
-    topPaymentMethod: 'PIX'
+    totalIncome: 0,
+    monthlyGrowth: 0,
+    transactionCount: 0,
+    averageTransaction: 0,
+    topCategory: 'N/A',
+    topPaymentMethod: 'N/A'
   };
 
   const handleAddTransaction = () => {
@@ -168,7 +168,7 @@ const Income = ({ onNavigate }) => {
               </Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">45%</div>
+              <div className="text-2xl font-bold">0%</div>
               <p className="text-xs text-muted-foreground">
                 do total de entradas
               </p>
@@ -183,7 +183,7 @@ const Income = ({ onNavigate }) => {
               </Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">38%</div>
+              <div className="text-2xl font-bold">0%</div>
               <p className="text-xs text-muted-foreground">
                 das transações
               </p>

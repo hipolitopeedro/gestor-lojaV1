@@ -28,68 +28,7 @@ const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDe
   const [dateRange, setDateRange] = useState('30d');
 
   // Mock data for demonstration
-  const mockTransactions = [
-    {
-      id: 1,
-      type: 'income',
-      amount: 1500.00,
-      description: 'Venda de produtos',
-      category: 'Vendas',
-      payment_method: 'pix',
-      card_fee: 0,
-      net_amount: 1500.00,
-      date: '2025-09-01T10:30:00',
-      notes: 'Cliente João Silva'
-    },
-    {
-      id: 2,
-      type: 'expense',
-      amount: 800.00,
-      description: 'Compra de materiais',
-      category: 'Fornecedores',
-      payment_method: 'credito',
-      card_fee: 28.00,
-      net_amount: 772.00,
-      date: '2025-08-31T14:20:00',
-      notes: 'Fornecedor ABC Ltda'
-    },
-    {
-      id: 3,
-      type: 'income',
-      amount: 2200.00,
-      description: 'Prestação de serviços',
-      category: 'Serviços',
-      payment_method: 'debito',
-      card_fee: 33.00,
-      net_amount: 2167.00,
-      date: '2025-08-30T16:45:00',
-      notes: 'Projeto desenvolvimento web'
-    },
-    {
-      id: 4,
-      type: 'expense',
-      amount: 1200.00,
-      description: 'Pagamento de salários',
-      category: 'Salários',
-      payment_method: 'pix',
-      card_fee: 0,
-      net_amount: 1200.00,
-      date: '2025-08-29T09:00:00',
-      notes: 'Funcionário Maria'
-    },
-    {
-      id: 5,
-      type: 'income',
-      amount: 950.00,
-      description: 'Comissão de vendas',
-      category: 'Comissões',
-      payment_method: 'dinheiro',
-      card_fee: 0,
-      net_amount: 950.00,
-      date: '2025-08-28T11:15:00',
-      notes: 'Comissão agosto'
-    }
-  ];
+  const mockTransactions = [];
 
   useEffect(() => {
     // Simulate API call

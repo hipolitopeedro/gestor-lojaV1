@@ -47,51 +47,24 @@ const Dashboard = ({ onNavigate }) => {
 
   // Sample data - in a real app, this would come from API
   const [dashboardData, setDashboardData] = useState({
-    totalRevenue: 45750.80,
-    totalExpenses: 28340.50,
-    netProfit: 17410.30,
-    profitMargin: 38.1,
-    pendingBills: 5,
-    overduePayments: 2,
-    activeCustomers: 234,
-    monthlyGrowth: 12.5
+    totalRevenue: 0,
+    totalExpenses: 0,
+    netProfit: 0,
+    profitMargin: 0,
+    pendingBills: 0,
+    overduePayments: 0,
+    activeCustomers: 0,
+    monthlyGrowth: 0
   });
 
   // Sample chart data
-  const monthlyRevenueData = [
-    { month: 'Jan', receita: 35000, despesas: 22000, lucro: 13000 },
-    { month: 'Fev', receita: 38000, despesas: 24000, lucro: 14000 },
-    { month: 'Mar', receita: 42000, despesas: 26000, lucro: 16000 },
-    { month: 'Abr', receita: 39000, despesas: 25000, lucro: 14000 },
-    { month: 'Mai', receita: 45000, despesas: 28000, lucro: 17000 },
-    { month: 'Jun', receita: 48000, despesas: 30000, lucro: 18000 }
-  ];
+  const monthlyRevenueData = [];
 
-  const expenseCategories = [
-    { name: 'Fornecedores', value: 12500, color: '#8884d8' },
-    { name: 'Salários', value: 8500, color: '#82ca9d' },
-    { name: 'Aluguel', value: 3200, color: '#ffc658' },
-    { name: 'Marketing', value: 2100, color: '#ff7300' },
-    { name: 'Outros', value: 2040, color: '#00ff88' }
-  ];
+  const expenseCategories = [];
 
-  const dailyTransactions = [
-    { day: 'Seg', entradas: 2800, saidas: 1200 },
-    { day: 'Ter', entradas: 3200, saidas: 1800 },
-    { day: 'Qua', entradas: 2900, saidas: 1500 },
-    { day: 'Qui', entradas: 3800, saidas: 2100 },
-    { day: 'Sex', entradas: 4200, saidas: 1900 },
-    { day: 'Sáb', entradas: 3500, saidas: 1600 },
-    { day: 'Dom', entradas: 2100, saidas: 900 }
-  ];
+  const dailyTransactions = [];
 
-  const paymentMethods = [
-    { method: 'PIX', amount: 18500, percentage: 40.4, growth: '+15%' },
-    { method: 'Cartão Débito', amount: 12300, percentage: 26.9, growth: '+8%' },
-    { method: 'Cartão Crédito', amount: 9800, percentage: 21.4, growth: '+12%' },
-    { method: 'Dinheiro', amount: 3200, percentage: 7.0, growth: '-5%' },
-    { method: 'Boleto', amount: 1950, percentage: 4.3, growth: '+3%' }
-  ];
+  const paymentMethods = [];
 
   const handleRefresh = () => {
     setIsLoading(true);

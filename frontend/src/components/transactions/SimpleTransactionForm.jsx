@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import PaymentMethodManager from './PaymentMethodManager';
 import { 
   DollarSign, 
   Receipt, 
@@ -13,7 +14,8 @@ import {
   Tag,
   FileText,
   Calculator,
-  AlertCircle
+  AlertCircle,
+  Settings
 } from 'lucide-react';
 
 const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null }) => {
@@ -31,15 +33,27 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
   const [netAmount, setNetAmount] = useState(0);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPaymentMethodManager, setShowPaymentMethodManager] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState([]);
 
-  // Card fee rates
-  const cardFeeRates = {
-    'credito': 0.035,  // 3.5%
-    'debito': 0.015,   // 1.5%
-    'pix': 0.0,        // 0%
-    'dinheiro': 0.0,   // 0%
-    'boleto': 0.02     // 2%
-  };
+  // Load payment methods from localStorage
+  useEffect(() => {
+    const savedMethods = localStorage.getItem('lupa_payment_methods');
+    if (savedMethods) {
+      setPaymentMethods(JSON.parse(savedMethods));
+    } else {
+      // Default payment methods
+      const defaultMethods = [
+        { id: 1, name: 'PIX', fee: 0 },
+        { id: 2, name: 'Dinheiro', fee: 0 },
+        { id: 3, name: 'Cartão Débito', fee: 1.5 },
+        { id: 4, name: 'Cartão Crédito', fee: 3.5 },
+        { id: 5, name: 'Boleto', fee: 2.0 }
+      ];
+      setPaymentMethods(defaultMethods);
+      localStorage.setItem('lupa_payment_methods', JSON.stringify(defaultMethods));
+    }
+  }, []);
 
   // Categories
   const incomeCategories = [
@@ -51,13 +65,17 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
     'Alimentação', 'Energia', 'Internet', 'Telefone', 'Materiais', 'Outros'
   ];
 
-  const paymentMethods = [
-    { value: 'pix', label: 'PIX' },
-    { value: 'dinheiro', label: 'Dinheiro' },
-    { value: 'debito', label: 'Cartão Débito' },
-    { value: 'credito', label: 'Cartão Crédito' },
-    { value: 'boleto', label: 'Boleto' }
-  ];
+  // Calculate card fee and net amount
+  useEffect(() => {
+    const amount = parseFloat(formData.amount) || 0;
+    const selectedMethod = paymentMethods.find(method => method.id.toString() === formData.payment_method);
+    const feeRate = selectedMethod ? selectedMethod.fee / 100 : 0;
+    const fee = amount * feeRate;
+    const net = amount - fee;
+
+    setCardFee(fee);
+    setNetAmount(net);
+  }, [formData.amount, formData.payment_method, paymentMethods]);
 
   // Initialize form with existing data if editing
   useEffect(() => {
@@ -73,17 +91,6 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
       });
     }
   }, [initialData]);
-
-  // Calculate card fee and net amount
-  useEffect(() => {
-    const amount = parseFloat(formData.amount) || 0;
-    const feeRate = cardFeeRates[formData.payment_method] || 0;
-    const fee = amount * feeRate;
-    const net = amount - fee;
-
-    setCardFee(fee);
-    setNetAmount(net);
-  }, [formData.amount, formData.payment_method]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -249,10 +256,21 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
 
           {/* Payment Method */}
           <div className="space-y-2">
-            <Label className="flex items-center">
-              <CreditCard className="h-4 w-4 mr-1" />
-              Forma de Pagamento
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center">
+                <CreditCard className="h-4 w-4 mr-1" />
+                Forma de Pagamento
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPaymentMethodManager(true)}
+              >
+                <Settings className="h-3 w-3 mr-1" />
+                Gerenciar
+              </Button>
+            </div>
             <select
               value={formData.payment_method}
               onChange={(e) => handleInputChange('payment_method', e.target.value)}
@@ -260,8 +278,8 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
             >
               <option value="">Selecione a forma de pagamento</option>
               {paymentMethods.map((method) => (
-                <option key={method.value} value={method.value}>
-                  {method.label}
+                <option key={method.id} value={method.id.toString()}>
+                  {method.name} {method.fee > 0 && `(${method.fee}%)`}
                 </option>
               ))}
             </select>
@@ -313,7 +331,7 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
                   <span>{formatCurrency(parseFloat(formData.amount) || 0)}</span>
                 </div>
                 <div className="flex justify-between text-red-600">
-                  <span>Taxa ({(cardFeeRates[formData.payment_method] * 100).toFixed(1)}%):</span>
+                  <span>Taxa ({paymentMethods.find(m => m.id.toString() === formData.payment_method)?.fee || 0}%):</span>
                   <span>-{formatCurrency(cardFee)}</span>
                 </div>
                 <div className="flex justify-between font-semibold border-t pt-1">
@@ -344,6 +362,20 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
           </div>
         </form>
       </CardContent>
+
+      {/* Payment Method Manager Modal */}
+      {showPaymentMethodManager && (
+        <PaymentMethodManager
+          onClose={() => {
+            setShowPaymentMethodManager(false);
+            // Refresh payment methods after closing the manager
+            const savedMethods = localStorage.getItem('lupa_payment_methods');
+            if (savedMethods) {
+              setPaymentMethods(JSON.parse(savedMethods));
+            }
+          }}
+        />
+      )}
     </Card>
   );
 };
