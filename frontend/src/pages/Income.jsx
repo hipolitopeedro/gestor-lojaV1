@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SimpleTransactionList from '@/components/transactions/SimpleTransactionList';
 import SimpleTransactionForm from '@/components/transactions/SimpleTransactionForm';
 import { Button } from '@/components/ui/button';
@@ -13,19 +13,40 @@ import {
   Plus,
   BarChart3
 } from 'lucide-react';
+import dataService from '@/services/dataService';
 
 const Income = ({ onNavigate }) => {
   const [currentView, setCurrentView] = useState('list'); // 'list', 'add', 'edit'
   const [editingTransaction, setEditingTransaction] = useState(null);
 
-  // Mock summary data
-  const summaryData = {
+  const [summaryData, setSummaryData] = useState({
     totalIncome: 0,
     monthlyGrowth: 0,
     transactionCount: 0,
     averageTransaction: 0,
     topCategory: 'N/A',
     topPaymentMethod: 'N/A'
+  });
+
+  // Load summary data from dataService
+  useEffect(() => {
+    loadSummaryData();
+  }, []);
+
+  const loadSummaryData = () => {
+    try {
+      const dashboardData = dataService.getDashboardData();
+      setSummaryData({
+        totalIncome: dashboardData.totalRevenue,
+        monthlyGrowth: dashboardData.monthlyGrowth,
+        transactionCount: dashboardData.transactionCount,
+        averageTransaction: dashboardData.averageTransaction,
+        topCategory: dashboardData.topCategory,
+        topPaymentMethod: dashboardData.topPaymentMethod
+      });
+    } catch (error) {
+      console.error('Error loading summary data:', error);
+    }
   };
 
   const handleAddTransaction = () => {
@@ -39,20 +60,17 @@ const Income = ({ onNavigate }) => {
   };
 
   const handleDeleteTransaction = (transaction) => {
-    // TODO: Implement delete functionality
-    console.log('Delete transaction:', transaction);
+    // Refresh summary data after deletion
+    loadSummaryData();
   };
 
   const handleFormSubmit = async (formData) => {
     try {
-      // TODO: Implement API call to save transaction
-      console.log('Saving transaction:', formData);
-      
-      // Simulate success
-      setTimeout(() => {
-        setCurrentView('list');
-        setEditingTransaction(null);
-      }, 1000);
+      // Transaction is already saved by the form component
+      // Just refresh the summary data and navigate back
+      loadSummaryData();
+      setCurrentView('list');
+      setEditingTransaction(null);
     } catch (error) {
       console.error('Error saving transaction:', error);
     }

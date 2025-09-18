@@ -2,22 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import PaymentMethodManager from './PaymentMethodManager';
 import { 
-  DollarSign, 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { 
   Receipt, 
-  CreditCard, 
-  Calendar,
-  Tag,
-  FileText,
+  DollarSign, 
+  Calendar, 
+  FileText, 
+  CreditCard,
   Calculator,
-  AlertCircle,
   Settings
 } from 'lucide-react';
+import PaymentMethodManager from './PaymentMethodManager';
+import dataService from '@/services/dataService';
 
 const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null }) => {
   const [formData, setFormData] = useState({
@@ -147,12 +152,26 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
     try {
       const submitData = {
         ...formData,
-        amount: parseFloat(formData.amount)
+        amount: parseFloat(formData.amount),
+        card_fee: cardFee,
+        net_amount: netAmount
       };
 
-      await onSubmit(submitData);
+      // Save transaction using dataService
+      const savedTransaction = await dataService.saveTransaction(submitData);
+      
+      // Call the parent onSubmit callback if provided
+      if (onSubmit) {
+        await onSubmit(savedTransaction);
+      }
+      
+      // Navigate back or reset form
+      if (onCancel) {
+        onCancel();
+      }
     } catch (error) {
       console.error('Error submitting transaction:', error);
+      alert('Erro ao salvar transação. Tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
