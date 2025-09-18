@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SimpleTransactionList from '@/components/transactions/SimpleTransactionList';
-import SimpleTransactionForm from '@/components/transactions/SimpleTransactionForm';
+import SimpleTransactionFormWorking from '@/components/transactions/SimpleTransactionFormWorking';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -104,7 +104,7 @@ const Income = ({ onNavigate }) => {
             </Button>
           </div>
 
-          <SimpleTransactionForm
+          <SimpleTransactionFormWorking
             type="income"
             onSubmit={handleFormSubmit}
             onCancel={handleFormCancel}
