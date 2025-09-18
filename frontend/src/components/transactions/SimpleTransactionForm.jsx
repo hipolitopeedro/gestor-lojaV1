@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import PaymentMethodManager from './PaymentMethodManager';
 import { 
   DollarSign, 
@@ -118,12 +119,16 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
       newErrors.description = 'Descrição é obrigatória';
     }
 
-    if (!formData.category) {
+    if (!formData.category || formData.category === 'Selecione uma categoria') {
       newErrors.category = 'Categoria é obrigatória';
     }
 
     if (!formData.date) {
       newErrors.date = 'Data é obrigatória';
+    }
+
+    if (!formData.payment_method || formData.payment_method === 'Selecione a forma de pagamento') {
+      newErrors.payment_method = 'Forma de pagamento é obrigatória';
     }
 
     setErrors(newErrors);
@@ -234,18 +239,21 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
               <Tag className="h-4 w-4 mr-1" />
               Categoria *
             </Label>
-            <select
+            <Select
               value={formData.category}
-              onChange={(e) => handleInputChange('category', e.target.value)}
-              className={`w-full p-2 border rounded-md ${errors.category ? 'border-red-500' : 'border-gray-300'}`}
+              onValueChange={(value) => handleInputChange('category', value)}
             >
-              <option value="">Selecione uma categoria</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className={`w-full ${errors.category ? 'border-red-500' : ''}`}>
+                <SelectValue placeholder="Selecione uma categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.category && (
               <p className="text-sm text-red-500 flex items-center">
                 <AlertCircle className="h-3 w-3 mr-1" />
@@ -259,7 +267,7 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
             <div className="flex items-center justify-between">
               <Label className="flex items-center">
                 <CreditCard className="h-4 w-4 mr-1" />
-                Forma de Pagamento
+                Forma de Pagamento *
               </Label>
               <Button
                 type="button"
@@ -271,18 +279,27 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
                 Gerenciar
               </Button>
             </div>
-            <select
+            <Select
               value={formData.payment_method}
-              onChange={(e) => handleInputChange('payment_method', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              onValueChange={(value) => handleInputChange('payment_method', value)}
             >
-              <option value="">Selecione a forma de pagamento</option>
-              {paymentMethods.map((method) => (
-                <option key={method.id} value={method.id.toString()}>
-                  {method.name} {method.fee > 0 && `(${method.fee}%)`}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className={`w-full ${errors.payment_method ? 'border-red-500' : ''}`}>
+                <SelectValue placeholder="Selecione a forma de pagamento" />
+              </SelectTrigger>
+              <SelectContent>
+                {paymentMethods.map((method) => (
+                  <SelectItem key={method.id} value={method.id.toString()}>
+                    {method.name} {method.fee > 0 && `(${method.fee}%)`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.payment_method && (
+              <p className="text-sm text-red-500 flex items-center">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                {errors.payment_method}
+              </p>
+            )}
           </div>
 
           {/* Date */}
@@ -381,4 +398,3 @@ const SimpleTransactionForm = ({ type, onSubmit, onCancel, initialData = null })
 };
 
 export default SimpleTransactionForm;
-
