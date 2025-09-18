@@ -40,12 +40,11 @@ import {
   Activity,
   LogOut
 } from 'lucide-react';
+import dataService from '@/services/dataService';
 
 const Dashboard = ({ onNavigate }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [isLoading, setIsLoading] = useState(false);
-
-  // Sample data - in a real app, this would come from API
   const [dashboardData, setDashboardData] = useState({
     totalRevenue: 0,
     totalExpenses: 0,
@@ -54,24 +53,71 @@ const Dashboard = ({ onNavigate }) => {
     pendingBills: 0,
     overduePayments: 0,
     activeCustomers: 0,
-    monthlyGrowth: 0
+    monthlyGrowth: 0,
+    transactionCount: 0,
+    averageTransaction: 0,
+    topCategory: 'N/A',
+    topPaymentMethod: 'N/A'
   });
 
-  // Sample chart data
-  const monthlyRevenueData = [];
+  const [monthlyRevenueData, setMonthlyRevenueData] = useState([]);
+  const [expenseCategories, setExpenseCategories] = useState([]);
+  const [dailyTransactions, setDailyTransactions] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
 
-  const expenseCategories = [];
+  // Load real data from localStorage
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
-  const dailyTransactions = [];
+  const loadDashboardData = () => {
+    try {
+      // Get dashboard statistics
+      const data = dataService.getDashboardData();
+      setDashboardData(data);
 
-  const paymentMethods = [];
+      // Get monthly chart data
+      const monthlyData = dataService.getMonthlyData();
+      setMonthlyRevenueData(monthlyData);
+
+      // Get daily transactions data
+      const dailyData = dataService.getDailyData();
+      setDailyTransactions(dailyData);
+
+      // Prepare expense categories for pie chart
+      const categoryData = Object.entries(data.categoryStats || {}).map(([name, value]) => ({
+        name,
+        value,
+        color: getRandomColor()
+      }));
+      setExpenseCategories(categoryData);
+
+      // Prepare payment methods data
+      const paymentData = Object.entries(data.paymentMethodStats || {}).map(([method, amount]) => ({
+        method,
+        amount,
+        percentage: data.totalRevenue > 0 ? Math.round((amount / data.totalRevenue) * 100) : 0,
+        growth: '+0%' // TODO: Calculate growth based on historical data
+      }));
+      setPaymentMethods(paymentData);
+
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    }
+  };
+
+  const getRandomColor = () => {
+    const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff00', '#ff00ff'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
 
   const handleRefresh = () => {
     setIsLoading(true);
-    // Simulate API call
+    // Reload real data
     setTimeout(() => {
+      loadDashboardData();
       setIsLoading(false);
-    }, 1500);
+    }, 500);
   };
 
   const formatCurrency = (value) => {

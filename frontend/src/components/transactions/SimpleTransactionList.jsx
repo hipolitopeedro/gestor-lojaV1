@@ -17,6 +17,7 @@ import {
   CreditCard,
   MoreHorizontal
 } from 'lucide-react';
+import dataService from '@/services/dataService';
 
 const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDeleteTransaction }) => {
   const [transactions, setTransactions] = useState([]);
@@ -27,18 +28,40 @@ const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDe
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [dateRange, setDateRange] = useState('30d');
 
-  // Mock data for demonstration
-  const mockTransactions = [];
-
+  // Load real transactions from localStorage
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      const filtered = type ? mockTransactions.filter(t => t.type === type) : mockTransactions;
+    loadTransactions();
+  }, [type]);
+
+  const loadTransactions = () => {
+    setLoading(true);
+    try {
+      const allTransactions = dataService.getTransactions();
+      const filtered = type ? allTransactions.filter(t => t.type === type) : allTransactions;
       setTransactions(filtered);
       setFilteredTransactions(filtered);
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, [type]);
+    }
+  };
+
+  // Handle delete transaction
+  const handleDeleteTransaction = async (transaction) => {
+    if (window.confirm(`Tem certeza que deseja excluir a transação "${transaction.description}"?`)) {
+      try {
+        await dataService.deleteTransaction(transaction.id);
+        loadTransactions(); // Reload transactions after deletion
+        if (onDeleteTransaction) {
+          onDeleteTransaction(transaction);
+        }
+      } catch (error) {
+        console.error('Error deleting transaction:', error);
+        alert('Erro ao excluir transação. Tente novamente.');
+      }
+    }
+  };
 
   useEffect(() => {
     let filtered = [...transactions];
@@ -307,7 +330,7 @@ const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDe
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onDeleteTransaction(transaction)}
+                        onClick={() => handleDeleteTransaction(transaction)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-3 w-3" />
