@@ -1,4 +1,4 @@
-# 📊 Sistema de Gestão Financeira LuPA
+# 📊 Sistema de Gestão Financeira LuPA - Projeto Interdisciplinar
 
 O **LuPA** (Lucro e Performance em Análise) é um sistema completo de gestão financeira, criado para ajudar pequenas e médias empresas. Com ele, é possível ver em tempo real as finanças, gerenciar transações e analisar a performance do negócio por uma interface web super intuitiva.
 
@@ -110,6 +110,8 @@ npm run dev
 
 ```bash
 cd backend
+python -m venv venv
+source venv/Scripts/activate
 pip install -r requirements.txt
 python src/main.py
 ```
@@ -118,7 +120,8 @@ python src/main.py
 
 ```bash
 cd frontend
-npm run build
+npm install --legacy-peer-deps
+npm run dev
 ```
 
 -----
@@ -136,22 +139,7 @@ npm run build
 
 -----
 
-## 🎯 Últimas Atualizações
-
-### **Versão 1.0 (Mais Recente)**
-
-  * ✅ Implementado menu fixo com ações rápidas.
-  * ✅ Botões atualizados com texto preto para melhor leitura.
-  * ✅ Tamanho dos botões reduzido para um design mais compacto.
-  * ✅ Melhorada a responsividade para celulares.
-  * ✅ Aprimorado o contraste de cores em toda a aplicação.
-  * ✅ Corrigidos problemas de sintaxe e código duplicado.
-
------
-
 ## 🤝 Contribuição
 
 Este é um projeto acadêmico para a matéria de Projeto Interdisciplinar (PIN).
-
-Sistema de Gestão Financeira LuPA - Transformando dados financeiros em inteligência de negócio.
 
