@@ -21,13 +21,13 @@ const Expense = ({ onNavigate }) => {
 
   // Mock summary data
   const summaryData = {
-    totalExpenses: 28340.50,
-    monthlyGrowth: 8.2,
-    transactionCount: 45,
-    averageTransaction: 629.79,
-    topCategory: 'Fornecedores',
-    topPaymentMethod: 'Cartão Crédito',
-    totalFees: 1250.30
+    totalExpenses: 0,
+    monthlyGrowth: 0,
+    transactionCount: 0,
+    averageTransaction: 0,
+    topCategory: 'N/A',
+    topPaymentMethod: 'N/A',
+    totalFees: 0
   };
 
   const handleAddTransaction = () => {
@@ -170,7 +170,7 @@ const Expense = ({ onNavigate }) => {
               </Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">44%</div>
+              <div className="text-2xl font-bold">0%</div>
               <p className="text-xs text-muted-foreground">
                 do total de despesas
               </p>
@@ -187,7 +187,7 @@ const Expense = ({ onNavigate }) => {
                 {formatCurrency(summaryData.totalFees)}
               </div>
               <p className="text-xs text-muted-foreground">
-                4.4% do total gasto
+                0% do total gasto
               </p>
             </CardContent>
           </Card>

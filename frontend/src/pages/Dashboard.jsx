@@ -40,65 +40,84 @@ import {
   Activity,
   LogOut
 } from 'lucide-react';
+import dataService from '@/services/dataService';
 
 const Dashboard = ({ onNavigate }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [isLoading, setIsLoading] = useState(false);
-
-  // Sample data - in a real app, this would come from API
   const [dashboardData, setDashboardData] = useState({
-    totalRevenue: 45750.80,
-    totalExpenses: 28340.50,
-    netProfit: 17410.30,
-    profitMargin: 38.1,
-    pendingBills: 5,
-    overduePayments: 2,
-    activeCustomers: 234,
-    monthlyGrowth: 12.5
+    totalRevenue: 0,
+    totalExpenses: 0,
+    netProfit: 0,
+    profitMargin: 0,
+    pendingBills: 0,
+    overduePayments: 0,
+    activeCustomers: 0,
+    monthlyGrowth: 0,
+    transactionCount: 0,
+    averageTransaction: 0,
+    topCategory: 'N/A',
+    topPaymentMethod: 'N/A'
   });
 
-  // Sample chart data
-  const monthlyRevenueData = [
-    { month: 'Jan', receita: 35000, despesas: 22000, lucro: 13000 },
-    { month: 'Fev', receita: 38000, despesas: 24000, lucro: 14000 },
-    { month: 'Mar', receita: 42000, despesas: 26000, lucro: 16000 },
-    { month: 'Abr', receita: 39000, despesas: 25000, lucro: 14000 },
-    { month: 'Mai', receita: 45000, despesas: 28000, lucro: 17000 },
-    { month: 'Jun', receita: 48000, despesas: 30000, lucro: 18000 }
-  ];
+  const [monthlyRevenueData, setMonthlyRevenueData] = useState([]);
+  const [expenseCategories, setExpenseCategories] = useState([]);
+  const [dailyTransactions, setDailyTransactions] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
 
-  const expenseCategories = [
-    { name: 'Fornecedores', value: 12500, color: '#8884d8' },
-    { name: 'Salários', value: 8500, color: '#82ca9d' },
-    { name: 'Aluguel', value: 3200, color: '#ffc658' },
-    { name: 'Marketing', value: 2100, color: '#ff7300' },
-    { name: 'Outros', value: 2040, color: '#00ff88' }
-  ];
+  // Load real data from localStorage
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
-  const dailyTransactions = [
-    { day: 'Seg', entradas: 2800, saidas: 1200 },
-    { day: 'Ter', entradas: 3200, saidas: 1800 },
-    { day: 'Qua', entradas: 2900, saidas: 1500 },
-    { day: 'Qui', entradas: 3800, saidas: 2100 },
-    { day: 'Sex', entradas: 4200, saidas: 1900 },
-    { day: 'Sáb', entradas: 3500, saidas: 1600 },
-    { day: 'Dom', entradas: 2100, saidas: 900 }
-  ];
+  const loadDashboardData = () => {
+    try {
+      // Get dashboard statistics
+      const data = dataService.getDashboardData();
+      setDashboardData(data);
 
-  const paymentMethods = [
-    { method: 'PIX', amount: 18500, percentage: 40.4, growth: '+15%' },
-    { method: 'Cartão Débito', amount: 12300, percentage: 26.9, growth: '+8%' },
-    { method: 'Cartão Crédito', amount: 9800, percentage: 21.4, growth: '+12%' },
-    { method: 'Dinheiro', amount: 3200, percentage: 7.0, growth: '-5%' },
-    { method: 'Boleto', amount: 1950, percentage: 4.3, growth: '+3%' }
-  ];
+      // Get monthly chart data
+      const monthlyData = dataService.getMonthlyData();
+      setMonthlyRevenueData(monthlyData);
+
+      // Get daily transactions data
+      const dailyData = dataService.getDailyData();
+      setDailyTransactions(dailyData);
+
+      // Prepare expense categories for pie chart
+      const categoryData = Object.entries(data.categoryStats || {}).map(([name, value]) => ({
+        name,
+        value,
+        color: getRandomColor()
+      }));
+      setExpenseCategories(categoryData);
+
+      // Prepare payment methods data
+      const paymentData = Object.entries(data.paymentMethodStats || {}).map(([method, amount]) => ({
+        method,
+        amount,
+        percentage: data.totalRevenue > 0 ? Math.round((amount / data.totalRevenue) * 100) : 0,
+        growth: '+0%' // TODO: Calculate growth based on historical data
+      }));
+      setPaymentMethods(paymentData);
+
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    }
+  };
+
+  const getRandomColor = () => {
+    const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff00', '#ff00ff'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
 
   const handleRefresh = () => {
     setIsLoading(true);
-    // Simulate API call
+    // Reload real data
     setTimeout(() => {
+      loadDashboardData();
       setIsLoading(false);
-    }, 1500);
+    }, 500);
   };
 
   const formatCurrency = (value) => {
