@@ -98,13 +98,6 @@ lupa-financial-system/
   * Python 3.11+
   * Git
 
-### **Configurando o Frontend**
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
 
 ### **Configurando o Backend**
 
