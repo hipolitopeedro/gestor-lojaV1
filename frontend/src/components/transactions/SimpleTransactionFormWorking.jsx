@@ -40,17 +40,29 @@ const SimpleTransactionFormWorking = ({ type, onSubmit, onCancel, initialData = 
     }
   }, []);
 
+  // Initialize form data if editing
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        ...initialData,
+        date: initialData.date ? initialData.date.split('T')[0] : new Date().toISOString().split('T')[0]
+      });
+    }
+  }, [initialData]);
+
   // Calculate fees when amount or payment method changes
   useEffect(() => {
     const amount = parseFloat(formData.amount) || 0;
     const selectedMethod = paymentMethods.find(m => m.id === formData.payment_method);
     const feeRate = selectedMethod ? selectedMethod.fee : 0;
     const fee = (amount * feeRate) / 100;
-    const net = amount - fee;
+    
+    // For income, fee is subtracted; for expense, fee is added
+    const net = type === 'income' ? amount - fee : amount + fee;
 
     setCardFee(fee);
     setNetAmount(net);
-  }, [formData.amount, formData.payment_method, paymentMethods]);
+  }, [formData.amount, formData.payment_method, paymentMethods, type]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -138,12 +150,24 @@ const SimpleTransactionFormWorking = ({ type, onSubmit, onCancel, initialData = 
     }).format(value);
   };
 
-  const categories = [
+  // Categories based on transaction type
+  const categories = type === 'income' ? [
     'Vendas',
     'Serviços',
     'Consultoria',
     'Produtos',
     'Comissões',
+    'Outros'
+  ] : [
+    'Aluguel',
+    'Salários',
+    'Fornecedores',
+    'Marketing',
+    'Impostos',
+    'Serviços',
+    'Equipamentos',
+    'Manutenção',
+    'Transporte',
     'Outros'
   ];
 
@@ -276,6 +300,17 @@ const SimpleTransactionFormWorking = ({ type, onSubmit, onCancel, initialData = 
                 )}
               </div>
 
+              {/* Notes */}
+              <div>
+                <Label htmlFor="notes">Observações</Label>
+                <Input
+                  id="notes"
+                  placeholder="Observações adicionais (opcional)"
+                  value={formData.notes || ''}
+                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                />
+              </div>
+
               {/* Fee Calculation */}
               {cardFee > 0 && (
                 <Card className="bg-yellow-50 border-yellow-200">
@@ -283,15 +318,15 @@ const SimpleTransactionFormWorking = ({ type, onSubmit, onCancel, initialData = 
                     <h3 className="font-semibold text-yellow-800 mb-2">Cálculo de Taxas</h3>
                     <div className="space-y-1 text-sm text-yellow-700">
                       <div className="flex justify-between">
-                        <span>Valor Bruto:</span>
+                        <span>Valor {type === 'income' ? 'Bruto' : 'Base'}:</span>
                         <span>{formatCurrency(parseFloat(formData.amount) || 0)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Taxa ({paymentMethods.find(m => m.id === formData.payment_method)?.fee || 0}%):</span>
-                        <span>-{formatCurrency(cardFee)}</span>
+                        <span>{type === 'income' ? '-' : '+'}{formatCurrency(cardFee)}</span>
                       </div>
                       <div className="flex justify-between font-semibold border-t border-yellow-300 pt-1">
-                        <span>Valor Líquido:</span>
+                        <span>Valor {type === 'income' ? 'Líquido' : 'Total'}:</span>
                         <span>{formatCurrency(netAmount)}</span>
                       </div>
                     </div>
