@@ -103,35 +103,52 @@ class DataService {
     const incomeTransactions = transactions.filter(t => t.type === 'income');
     const expenseTransactions = transactions.filter(t => t.type === 'expense');
 
-    const totalRevenue = incomeTransactions.reduce((sum, t) => sum + (t.net_amount || 0), 0);
-    const totalExpenses = expenseTransactions.reduce((sum, t) => sum + (t.net_amount || 0), 0);
+    const totalRevenue = incomeTransactions.reduce((sum, t) => sum + (parseFloat(t.net_amount) || 0), 0);
+    const totalExpenses = expenseTransactions.reduce((sum, t) => sum + (parseFloat(t.net_amount) || 0), 0);
     const netProfit = totalRevenue - totalExpenses;
     const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100) : 0;
 
-    // Calculate category distribution
-    const categoryStats = {};
+    // Calculate total fees paid
+    const totalFeesPaid = transactions.reduce((sum, t) => sum + (parseFloat(t.card_fee) || 0), 0);
+
+    // Calculate category distribution for income
+    const incomeCategoryStats = {};
     incomeTransactions.forEach(t => {
       if (t.category) {
-        categoryStats[t.category] = (categoryStats[t.category] || 0) + (t.net_amount || 0);
+        incomeCategoryStats[t.category] = (incomeCategoryStats[t.category] || 0) + (parseFloat(t.net_amount) || 0);
+      }
+    });
+
+    // Calculate category distribution for expenses
+    const expenseCategoryStats = {};
+    expenseTransactions.forEach(t => {
+      if (t.category) {
+        expenseCategoryStats[t.category] = (expenseCategoryStats[t.category] || 0) + (parseFloat(t.net_amount) || 0);
       }
     });
 
     // Calculate payment method distribution
     const paymentMethodStats = {};
-    incomeTransactions.forEach(t => {
+    transactions.forEach(t => {
       if (t.payment_method) {
         const paymentMethods = this.getPaymentMethods();
         const method = paymentMethods.find(pm => pm.id === t.payment_method);
         const methodName = method ? method.name : 'Desconhecido';
-        paymentMethodStats[methodName] = (paymentMethodStats[methodName] || 0) + (t.net_amount || 0);
+        paymentMethodStats[methodName] = (paymentMethodStats[methodName] || 0) + (parseFloat(t.net_amount) || 0);
       }
     });
 
-    // Find top category and payment method
-    const topCategory = Object.keys(categoryStats).length > 0 
-      ? Object.keys(categoryStats).reduce((a, b) => categoryStats[a] > categoryStats[b] ? a : b)
+    // Find top income category
+    const topIncomeCategory = Object.keys(incomeCategoryStats).length > 0 
+      ? Object.keys(incomeCategoryStats).reduce((a, b) => incomeCategoryStats[a] > incomeCategoryStats[b] ? a : b)
       : 'N/A';
     
+    // Find top expense category
+    const topExpenseCategory = Object.keys(expenseCategoryStats).length > 0 
+      ? Object.keys(expenseCategoryStats).reduce((a, b) => expenseCategoryStats[a] > expenseCategoryStats[b] ? a : b)
+      : 'N/A';
+    
+    // Find top payment method
     const topPaymentMethod = Object.keys(paymentMethodStats).length > 0
       ? Object.keys(paymentMethodStats).reduce((a, b) => paymentMethodStats[a] > paymentMethodStats[b] ? a : b)
       : 'N/A';
@@ -141,12 +158,20 @@ class DataService {
       totalExpenses,
       netProfit,
       profitMargin: Math.round(profitMargin * 100) / 100,
-      transactionCount: incomeTransactions.length,
-      averageTransaction: incomeTransactions.length > 0 ? totalRevenue / incomeTransactions.length : 0,
-      topCategory,
+      incomeTransactionCount: incomeTransactions.length,
+      expenseTransactionCount: expenseTransactions.length,
+      transactionCount: transactions.length,
+      averageIncome: incomeTransactions.length > 0 ? totalRevenue / incomeTransactions.length : 0,
+      averageExpense: expenseTransactions.length > 0 ? totalExpenses / expenseTransactions.length : 0,
+      averageTransaction: transactions.length > 0 ? (totalRevenue + totalExpenses) / transactions.length : 0,
+      topIncomeCategory,
+      topExpenseCategory,
+      topCategory: topIncomeCategory,
       topPaymentMethod,
-      categoryStats,
+      incomeCategoryStats,
+      expenseCategoryStats,
       paymentMethodStats,
+      totalFeesPaid,
       pendingBills: 0, // TODO: Implement when bills feature is added
       overduePayments: 0, // TODO: Implement when receivables feature is added
       activeCustomers: 0, // TODO: Implement when customers feature is added
@@ -172,7 +197,7 @@ class DataService {
         };
       }
 
-      const amount = transaction.net_amount || 0;
+      const amount = parseFloat(transaction.net_amount) || 0;
       if (transaction.type === 'income') {
         monthlyData[monthKey].receita += amount;
       } else if (transaction.type === 'expense') {
@@ -214,7 +239,7 @@ class DataService {
       const dayKey = transactionDate.toISOString().split('T')[0];
       
       if (dailyData[dayKey]) {
-        const amount = transaction.net_amount || 0;
+        const amount = parseFloat(transaction.net_amount) || 0;
         if (transaction.type === 'income') {
           dailyData[dayKey].entradas += amount;
         } else if (transaction.type === 'expense') {

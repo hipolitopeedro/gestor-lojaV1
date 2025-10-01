@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SimpleTransactionList from '@/components/transactions/SimpleTransactionList';
-import SimpleTransactionForm from '@/components/transactions/SimpleTransactionForm';
+import SimpleTransactionFormWorking from '@/components/transactions/SimpleTransactionFormWorking';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,13 +14,13 @@ import {
   BarChart3,
   AlertTriangle
 } from 'lucide-react';
+import dataService from '@/services/dataService';
 
 const Expense = ({ onNavigate }) => {
   const [currentView, setCurrentView] = useState('list'); // 'list', 'add', 'edit'
   const [editingTransaction, setEditingTransaction] = useState(null);
 
-  // Mock summary data
-  const summaryData = {
+  const [summaryData, setSummaryData] = useState({
     totalExpenses: 0,
     monthlyGrowth: 0,
     transactionCount: 0,
@@ -28,6 +28,28 @@ const Expense = ({ onNavigate }) => {
     topCategory: 'N/A',
     topPaymentMethod: 'N/A',
     totalFees: 0
+  });
+
+  // Load summary data from dataService
+  useEffect(() => {
+    loadSummaryData();
+  }, []);
+
+  const loadSummaryData = () => {
+    try {
+      const dashboardData = dataService.getDashboardData();
+      setSummaryData({
+        totalExpenses: dashboardData.totalExpenses,
+        monthlyGrowth: dashboardData.monthlyGrowth,
+        transactionCount: dashboardData.transactionCount,
+        averageTransaction: dashboardData.averageTransaction,
+        topCategory: dashboardData.topCategory,
+        topPaymentMethod: dashboardData.topPaymentMethod,
+        totalFees: 0 // TODO: Calculate total fees paid
+      });
+    } catch (error) {
+      console.error('Error loading summary data:', error);
+    }
   };
 
   const handleAddTransaction = () => {
@@ -41,20 +63,17 @@ const Expense = ({ onNavigate }) => {
   };
 
   const handleDeleteTransaction = (transaction) => {
-    // TODO: Implement delete functionality
-    console.log('Delete transaction:', transaction);
+    // Refresh summary data after deletion
+    loadSummaryData();
   };
 
   const handleFormSubmit = async (formData) => {
     try {
-      // TODO: Implement API call to save transaction
-      console.log('Saving transaction:', formData);
-      
-      // Simulate success
-      setTimeout(() => {
-        setCurrentView('list');
-        setEditingTransaction(null);
-      }, 1000);
+      // Transaction is already saved by the form component
+      // Just refresh the summary data and navigate back
+      loadSummaryData();
+      setCurrentView('list');
+      setEditingTransaction(null);
     } catch (error) {
       console.error('Error saving transaction:', error);
     }
@@ -88,7 +107,7 @@ const Expense = ({ onNavigate }) => {
             </Button>
           </div>
 
-          <SimpleTransactionForm
+          <SimpleTransactionFormWorking
             type="expense"
             onSubmit={handleFormSubmit}
             onCancel={handleFormCancel}
@@ -222,4 +241,3 @@ const Expense = ({ onNavigate }) => {
 };
 
 export default Expense;
-
