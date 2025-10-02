@@ -15,8 +15,11 @@ import {
   TrendingDown,
   Receipt,
   CreditCard,
-  MoreHorizontal
+  MoreHorizontal,
+  Settings
 } from 'lucide-react';
+import dataService from '@/services/dataService';
+import PaymentMethodManager from './PaymentMethodManager';
 
 const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDeleteTransaction }) => {
   const [transactions, setTransactions] = useState([]);
@@ -26,19 +29,42 @@ const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDe
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [dateRange, setDateRange] = useState('30d');
+  const [showPaymentMethodManager, setShowPaymentMethodManager] = useState(false);
 
-  // Mock data for demonstration
-  const mockTransactions = [];
-
+  // Load real transactions from localStorage
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      const filtered = type ? mockTransactions.filter(t => t.type === type) : mockTransactions;
+    loadTransactions();
+  }, [type]);
+
+  const loadTransactions = () => {
+    setLoading(true);
+    try {
+      const allTransactions = dataService.getTransactions();
+      const filtered = type ? allTransactions.filter(t => t.type === type) : allTransactions;
       setTransactions(filtered);
       setFilteredTransactions(filtered);
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, [type]);
+    }
+  };
+
+  // Handle delete transaction
+  const handleDeleteTransaction = async (transaction) => {
+    if (window.confirm(`Tem certeza que deseja excluir a transação "${transaction.description}"?`)) {
+      try {
+        await dataService.deleteTransaction(transaction.id);
+        loadTransactions(); // Reload transactions after deletion
+        if (onDeleteTransaction) {
+          onDeleteTransaction(transaction);
+        }
+      } catch (error) {
+        console.error('Error deleting transaction:', error);
+        alert('Erro ao excluir transação. Tente novamente.');
+      }
+    }
+  };
 
   useEffect(() => {
     let filtered = [...transactions];
@@ -82,15 +108,10 @@ const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDe
     });
   };
 
-  const getPaymentMethodLabel = (method) => {
-    const methods = {
-      'pix': 'PIX',
-      'dinheiro': 'Dinheiro',
-      'debito': 'Cartão Débito',
-      'credito': 'Cartão Crédito',
-      'boleto': 'Boleto'
-    };
-    return methods[method] || method;
+  const getPaymentMethodLabel = (methodId) => {
+    const methods = dataService.getPaymentMethods();
+    const method = methods.find(m => m.id === methodId);
+    return method ? method.name : methodId;
   };
 
   const getUniqueCategories = () => {
@@ -109,6 +130,12 @@ const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDe
     return filteredTransactions.length;
   };
 
+  const handlePaymentMethodManagerClose = () => {
+    setShowPaymentMethodManager(false);
+    // Reload transactions to reflect any changes in payment methods
+    loadTransactions();
+  };
+
   if (loading) {
     return (
       <Card>
@@ -124,6 +151,11 @@ const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDe
 
   return (
     <div className="space-y-6">
+      {/* Payment Method Manager Modal */}
+      {showPaymentMethodManager && (
+        <PaymentMethodManager onClose={handlePaymentMethodManagerClose} />
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -135,10 +167,20 @@ const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDe
           </p>
         </div>
         
-        <Button onClick={onAddTransaction} className="flex items-center">
-          <Plus className="h-4 w-4 mr-2" />
-          Nova {type === 'income' ? 'Entrada' : type === 'expense' ? 'Despesa' : 'Transação'}
-        </Button>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={() => setShowPaymentMethodManager(true)}
+            title="Gerenciar Formas de Pagamento"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button onClick={onAddTransaction} className="flex items-center">
+            <Plus className="h-4 w-4 mr-2" />
+            Nova {type === 'income' ? 'Entrada' : type === 'expense' ? 'Despesa' : 'Transação'}
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -307,7 +349,7 @@ const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDe
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onDeleteTransaction(transaction)}
+                        onClick={() => handleDeleteTransaction(transaction)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-3 w-3" />
@@ -325,4 +367,3 @@ const SimpleTransactionList = ({ type, onAddTransaction, onEditTransaction, onDe
 };
 
 export default SimpleTransactionList;
-

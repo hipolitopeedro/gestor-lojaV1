@@ -12,8 +12,10 @@ import {
   Percent,
   Save,
   X,
-  AlertCircle
+  AlertCircle,
+  Info
 } from 'lucide-react';
+import dataService from '@/services/dataService';
 
 const PaymentMethodManager = ({ onClose }) => {
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -22,30 +24,11 @@ const PaymentMethodManager = ({ onClose }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Load payment methods from localStorage on component mount
+  // Load payment methods from dataService on component mount
   useEffect(() => {
-    const savedMethods = localStorage.getItem('lupa_payment_methods');
-    if (savedMethods) {
-      setPaymentMethods(JSON.parse(savedMethods));
-    } else {
-      // Default payment methods
-      const defaultMethods = [
-        { id: 1, name: 'PIX', fee: 0 },
-        { id: 2, name: 'Dinheiro', fee: 0 },
-        { id: 3, name: 'Cartão Débito', fee: 1.5 },
-        { id: 4, name: 'Cartão Crédito', fee: 3.5 },
-        { id: 5, name: 'Boleto', fee: 2.0 }
-      ];
-      setPaymentMethods(defaultMethods);
-      localStorage.setItem('lupa_payment_methods', JSON.stringify(defaultMethods));
-    }
-  }, []);
-
-  // Save payment methods to localStorage
-  const savePaymentMethods = (methods) => {
-    localStorage.setItem('lupa_payment_methods', JSON.stringify(methods));
+    const methods = dataService.getPaymentMethods();
     setPaymentMethods(methods);
-  };
+  }, []);
 
   const validateForm = (data) => {
     const newErrors = {};
@@ -68,13 +51,16 @@ const PaymentMethodManager = ({ onClose }) => {
     }
 
     const method = {
-      id: Date.now(),
+      id: Date.now().toString(),
       name: newMethod.name.trim(),
       fee: parseFloat(newMethod.fee)
     };
 
     const updatedMethods = [...paymentMethods, method];
-    savePaymentMethods(updatedMethods);
+    
+    // Save to localStorage using dataService
+    localStorage.setItem(dataService.PAYMENT_METHODS_KEY, JSON.stringify(updatedMethods));
+    setPaymentMethods(updatedMethods);
     
     setNewMethod({ name: '', fee: '' });
     setShowAddForm(false);
@@ -103,7 +89,9 @@ const PaymentMethodManager = ({ onClose }) => {
         : method
     );
 
-    savePaymentMethods(updatedMethods);
+    // Save to localStorage using dataService
+    localStorage.setItem(dataService.PAYMENT_METHODS_KEY, JSON.stringify(updatedMethods));
+    setPaymentMethods(updatedMethods);
     setEditingMethod(null);
     setErrors({});
   };
@@ -111,7 +99,10 @@ const PaymentMethodManager = ({ onClose }) => {
   const handleDeleteMethod = (methodId) => {
     if (window.confirm('Tem certeza que deseja excluir este método de pagamento?')) {
       const updatedMethods = paymentMethods.filter(method => method.id !== methodId);
-      savePaymentMethods(updatedMethods);
+      
+      // Save to localStorage using dataService
+      localStorage.setItem(dataService.PAYMENT_METHODS_KEY, JSON.stringify(updatedMethods));
+      setPaymentMethods(updatedMethods);
     }
   };
 
@@ -140,6 +131,19 @@ const PaymentMethodManager = ({ onClose }) => {
         </CardHeader>
 
         <CardContent>
+          {/* Info Card */}
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardContent className="p-4 flex items-start">
+              <Info className="h-5 w-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-blue-800">
+                  Os métodos de pagamento cadastrados aqui estarão disponíveis para seleção ao registrar novas transações.
+                  As taxas configuradas serão automaticamente calculadas com base no valor da transação.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Add New Method Form */}
           {showAddForm && (
             <Card className="mb-6 border-green-200 bg-green-50">
@@ -347,4 +351,3 @@ const PaymentMethodManager = ({ onClose }) => {
 };
 
 export default PaymentMethodManager;
-
