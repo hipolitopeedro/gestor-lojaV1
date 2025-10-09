@@ -15,34 +15,76 @@ import {
   Scan,
   Receipt,
   CreditCard,
-  DollarSign
+  DollarSign,
+  Settings
 } from 'lucide-react';
+import PaymentMethodManager from '@/components/transactions/PaymentMethodManager';
+import dataService from '@/services/dataService';
 
 const BillPayment = ({ onNavigate }) => {
   const [bills, setBills] = useState([]);
   const [summary, setSummary] = useState({});
   const [showAddBill, setShowAddBill] = useState(false);
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+  const [showPaymentMethodManager, setShowPaymentMethodManager] = useState(false);
   const [filters, setFilters] = useState({
     status: 'all',
     category: 'all',
     search: ''
   });
 
-  // Mock data for demonstration
+  // Load bills from localStorage
   useEffect(() => {
-    const mockSummary = {
-      total_bills: 12,
-      pending_bills: 5,
-      paid_bills: 6,
-      overdue_bills: 1,
-      bills_due_this_week: 3,
-      total_pending_amount: 1847.50,
-      total_paid_amount: 2340.80,
-      total_overdue_amount: 156.30
-    };
+    loadBills();
+  }, []);
 
-    const mockBills = [
+  const loadBills = () => {
+    // Try to get bills from localStorage
+    try {
+      const storedBills = localStorage.getItem('lupa_bills');
+      const billsData = storedBills ? JSON.parse(storedBills) : getMockBills();
+      setBills(billsData);
+      updateSummary(billsData);
+    } catch (error) {
+      console.error('Error loading bills:', error);
+      const mockBills = getMockBills();
+      setBills(mockBills);
+      updateSummary(mockBills);
+    }
+  };
+
+  const updateSummary = (billsData) => {
+    const pendingBills = billsData.filter(b => b.status === 'pending' && !b.is_overdue);
+    const paidBills = billsData.filter(b => b.status === 'paid');
+    const overdueBills = billsData.filter(b => b.is_overdue);
+    
+    const today = new Date();
+    const nextWeek = new Date();
+    nextWeek.setDate(today.getDate() + 7);
+    
+    const billsDueThisWeek = billsData.filter(b => {
+      const dueDate = new Date(b.due_date);
+      return b.status === 'pending' && dueDate >= today && dueDate <= nextWeek;
+    });
+
+    const totalPendingAmount = pendingBills.reduce((sum, b) => sum + b.final_amount, 0);
+    const totalPaidAmount = paidBills.reduce((sum, b) => sum + b.final_amount, 0);
+    const totalOverdueAmount = overdueBills.reduce((sum, b) => sum + b.final_amount, 0);
+
+    setSummary({
+      total_bills: billsData.length,
+      pending_bills: pendingBills.length,
+      paid_bills: paidBills.length,
+      overdue_bills: overdueBills.length,
+      bills_due_this_week: billsDueThisWeek.length,
+      total_pending_amount: totalPendingAmount,
+      total_paid_amount: totalPaidAmount,
+      total_overdue_amount: totalOverdueAmount
+    });
+  };
+
+  const getMockBills = () => {
+    return [
       {
         id: 1,
         title: 'Conta de Energia Elétrica',
@@ -50,7 +92,7 @@ const BillPayment = ({ onNavigate }) => {
         category: 'Energia',
         original_amount: 245.80,
         final_amount: 245.80,
-        due_date: '2025-09-05',
+        due_date: '2025-10-05',
         status: 'pending',
         is_overdue: false,
         days_until_due: 4,
@@ -63,7 +105,7 @@ const BillPayment = ({ onNavigate }) => {
         category: 'Água',
         original_amount: 89.50,
         final_amount: 89.50,
-        due_date: '2025-09-08',
+        due_date: '2025-10-08',
         status: 'pending',
         is_overdue: false,
         days_until_due: 7,
@@ -76,7 +118,7 @@ const BillPayment = ({ onNavigate }) => {
         category: 'Telecomunicações',
         original_amount: 99.90,
         final_amount: 99.90,
-        due_date: '2025-09-10',
+        due_date: '2025-10-10',
         status: 'pending',
         is_overdue: false,
         days_until_due: 9
@@ -89,7 +131,7 @@ const BillPayment = ({ onNavigate }) => {
         original_amount: 156.30,
         interest_amount: 15.63,
         final_amount: 171.93,
-        due_date: '2025-08-28',
+        due_date: '2025-09-28',
         status: 'pending',
         is_overdue: true,
         days_until_due: -4
@@ -101,8 +143,8 @@ const BillPayment = ({ onNavigate }) => {
         category: 'Seguros',
         original_amount: 156.40,
         final_amount: 156.40,
-        due_date: '2025-08-25',
-        payment_date: '2025-08-24',
+        due_date: '2025-09-25',
+        payment_date: '2025-09-24',
         status: 'paid',
         payment_method: 'PIX'
       },
@@ -113,16 +155,21 @@ const BillPayment = ({ onNavigate }) => {
         category: 'Financiamentos',
         original_amount: 890.50,
         final_amount: 890.50,
-        due_date: '2025-08-20',
-        payment_date: '2025-08-19',
+        due_date: '2025-09-20',
+        payment_date: '2025-09-19',
         status: 'paid',
         payment_method: 'Débito Automático'
       }
     ];
+  };
 
-    setSummary(mockSummary);
-    setBills(mockBills);
-  }, []);
+  const saveBills = (updatedBills) => {
+    try {
+      localStorage.setItem('lupa_bills', JSON.stringify(updatedBills));
+    } catch (error) {
+      console.error('Error saving bills:', error);
+    }
+  };
 
   const getStatusColor = (status, isOverdue) => {
     if (isOverdue) return 'destructive';
@@ -173,29 +220,53 @@ const BillPayment = ({ onNavigate }) => {
     // In a real app, this would open a payment modal or redirect to payment flow
     console.log('Paying bill:', billId);
     // Mock payment
-    setBills(bills.map(bill => 
+    const updatedBills = bills.map(bill => 
       bill.id === billId 
         ? { ...bill, status: 'paid', payment_date: new Date().toISOString().split('T')[0], payment_method: 'PIX' }
         : bill
-    ));
+    );
+    setBills(updatedBills);
+    saveBills(updatedBills);
+    updateSummary(updatedBills);
+  };
+
+  const handleSaveBill = (bill) => {
+    const newBill = { ...bill, id: Date.now() };
+    const updatedBills = [...bills, newBill];
+    setBills(updatedBills);
+    saveBills(updatedBills);
+    updateSummary(updatedBills);
+    setShowAddBill(false);
+  };
+
+  const handleScanBill = (billData) => {
+    const newBill = { ...billData, id: Date.now() };
+    const updatedBills = [...bills, newBill];
+    setBills(updatedBills);
+    saveBills(updatedBills);
+    updateSummary(updatedBills);
+    setShowBarcodeScanner(false);
+  };
+
+  const handlePaymentMethodManagerClose = () => {
+    setShowPaymentMethodManager(false);
   };
 
   if (showAddBill) {
-    return <AddBillForm onBack={() => setShowAddBill(false)} onSave={(bill) => {
-      setBills([...bills, { ...bill, id: Date.now() }]);
-      setShowAddBill(false);
-    }} />;
+    return <AddBillForm onBack={() => setShowAddBill(false)} onSave={handleSaveBill} />;
   }
 
   if (showBarcodeScanner) {
-    return <BarcodeScanner onBack={() => setShowBarcodeScanner(false)} onScan={(billData) => {
-      setBills([...bills, { ...billData, id: Date.now() }]);
-      setShowBarcodeScanner(false);
-    }} />;
+    return <BarcodeScanner onBack={() => setShowBarcodeScanner(false)} onScan={handleScanBill} />;
   }
 
   return (
     <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
+      {/* Payment Method Manager Modal */}
+      {showPaymentMethodManager && (
+        <PaymentMethodManager onClose={handlePaymentMethodManagerClose} />
+      )}
+
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div style={{ backgroundColor: '#8b5cf6' }} className="p-6 rounded-lg">
@@ -277,6 +348,19 @@ const BillPayment = ({ onNavigate }) => {
               <p className="text-xs text-gray-600">Requer atenção</p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Payment Methods Management Button */}
+        <div className="flex justify-end">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowPaymentMethodManager(true)}
+            className="flex items-center"
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Gerenciar Formas de Pagamento
+          </Button>
         </div>
 
         {/* Filters */}
@@ -427,13 +511,20 @@ const AddBillForm = ({ onBack, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Calculate days until due
+    const today = new Date();
+    const dueDate = new Date(formData.due_date);
+    const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+    const isOverdue = daysUntilDue < 0;
+    
     onSave({
       ...formData,
       original_amount: parseFloat(formData.original_amount),
       final_amount: parseFloat(formData.original_amount),
       status: 'pending',
-      is_overdue: false,
-      days_until_due: Math.ceil((new Date(formData.due_date) - new Date()) / (1000 * 60 * 60 * 24))
+      is_overdue: isOverdue,
+      days_until_due: daysUntilDue
     });
   };
 
@@ -449,7 +540,7 @@ const AddBillForm = ({ onBack, onSave }) => {
               </Button>
               <div>
                 <CardTitle className="flex items-center">
-                  <Plus className="w-5 h-5 mr-2 text-blue-600" />
+                  <Receipt className="w-5 h-5 mr-2 text-purple-600" />
                   Nova Conta
                 </CardTitle>
                 <CardDescription>Adicione uma nova conta para pagamento</CardDescription>
@@ -464,18 +555,19 @@ const AddBillForm = ({ onBack, onSave }) => {
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Ex: Conta de Energia Elétrica"
+                  placeholder="Ex: Conta de Luz"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="company">Empresa</Label>
+                <Label htmlFor="company">Empresa *</Label>
                 <Input
                   id="company"
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                   placeholder="Ex: Companhia de Energia"
+                  required
                 />
               </div>
 
@@ -563,13 +655,17 @@ const BarcodeScanner = ({ onBack, onScan }) => {
     
     // Mock barcode processing
     setTimeout(() => {
+      // Calculate days until due
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 14); // Due in 14 days
+      
       const mockBillData = {
         title: 'Conta identificada por código de barras',
         company: 'Empresa identificada',
         category: 'Energia',
         original_amount: 187.45,
         final_amount: 187.45,
-        due_date: '2025-09-15',
+        due_date: dueDate.toISOString().split('T')[0],
         status: 'pending',
         is_overdue: false,
         days_until_due: 14,
@@ -658,4 +754,3 @@ const BarcodeScanner = ({ onBack, onScan }) => {
 };
 
 export default BillPayment;
-

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SimpleTransactionList from '@/components/transactions/SimpleTransactionList';
 import SimpleTransactionFormWorking from '@/components/transactions/SimpleTransactionFormWorking';
+import PaymentMethodManager from '@/components/transactions/PaymentMethodManager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,13 +12,15 @@ import {
   Calendar,
   ArrowLeft,
   Plus,
-  BarChart3
+  BarChart3,
+  Settings
 } from 'lucide-react';
 import dataService from '@/services/dataService';
 
 const Income = ({ onNavigate }) => {
   const [currentView, setCurrentView] = useState('list'); // 'list', 'add', 'edit'
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const [showPaymentMethodManager, setShowPaymentMethodManager] = useState(false);
 
   const [summaryData, setSummaryData] = useState({
     totalIncome: 0,
@@ -81,6 +84,10 @@ const Income = ({ onNavigate }) => {
     setEditingTransaction(null);
   };
 
+  const handlePaymentMethodManagerClose = () => {
+    setShowPaymentMethodManager(false);
+  };
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -117,6 +124,11 @@ const Income = ({ onNavigate }) => {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f5f3ff' }}>
+      {/* Payment Method Manager Modal */}
+      {showPaymentMethodManager && (
+        <PaymentMethodManager onClose={handlePaymentMethodManagerClose} />
+      )}
+
       {/* Header */}
       <div style={{ backgroundColor: '#8b5cf6' }} className="border-b">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -209,6 +221,19 @@ const Income = ({ onNavigate }) => {
           </Card>
         </div>
 
+        {/* Payment Methods Management Button */}
+        <div className="flex justify-end mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowPaymentMethodManager(true)}
+            className="flex items-center"
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Gerenciar Formas de Pagamento
+          </Button>
+        </div>
+
         {/* Transaction List */}
         <SimpleTransactionList
           type="income"
@@ -222,4 +247,3 @@ const Income = ({ onNavigate }) => {
 };
 
 export default Income;
-
