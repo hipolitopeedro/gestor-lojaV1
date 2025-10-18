@@ -42,14 +42,13 @@ const BillPayment = ({ onNavigate }) => {
     // Try to get bills from localStorage
     try {
       const storedBills = localStorage.getItem('lupa_bills');
-      const billsData = storedBills ? JSON.parse(storedBills) : getMockBills();
+      const billsData = storedBills ? JSON.parse(storedBills) : [];
       setBills(billsData);
       updateSummary(billsData);
     } catch (error) {
       console.error('Error loading bills:', error);
-      const mockBills = getMockBills();
-      setBills(mockBills);
-      updateSummary(mockBills);
+      setBills([]);
+      updateSummary([]);
     }
   };
 
@@ -83,85 +82,7 @@ const BillPayment = ({ onNavigate }) => {
     });
   };
 
-  const getMockBills = () => {
-    return [
-      {
-        id: 1,
-        title: 'Conta de Energia Elétrica',
-        company: 'Companhia de Energia',
-        category: 'Energia',
-        original_amount: 245.80,
-        final_amount: 245.80,
-        due_date: '2025-10-05',
-        status: 'pending',
-        is_overdue: false,
-        days_until_due: 4,
-        barcode: '34191790010104351004791020150008291070026000'
-      },
-      {
-        id: 2,
-        title: 'Conta de Água e Esgoto',
-        company: 'Companhia de Saneamento',
-        category: 'Água',
-        original_amount: 89.50,
-        final_amount: 89.50,
-        due_date: '2025-10-08',
-        status: 'pending',
-        is_overdue: false,
-        days_until_due: 7,
-        barcode: '34191790010104351004791020150008291070026001'
-      },
-      {
-        id: 3,
-        title: 'Internet Banda Larga',
-        company: 'Provedor Internet',
-        category: 'Telecomunicações',
-        original_amount: 99.90,
-        final_amount: 99.90,
-        due_date: '2025-10-10',
-        status: 'pending',
-        is_overdue: false,
-        days_until_due: 9
-      },
-      {
-        id: 4,
-        title: 'Conta de Gás',
-        company: 'Companhia de Gás',
-        category: 'Gás',
-        original_amount: 156.30,
-        interest_amount: 15.63,
-        final_amount: 171.93,
-        due_date: '2025-09-28',
-        status: 'pending',
-        is_overdue: true,
-        days_until_due: -4
-      },
-      {
-        id: 5,
-        title: 'Seguro Residencial',
-        company: 'Seguradora XYZ',
-        category: 'Seguros',
-        original_amount: 156.40,
-        final_amount: 156.40,
-        due_date: '2025-09-25',
-        payment_date: '2025-09-24',
-        status: 'paid',
-        payment_method: 'PIX'
-      },
-      {
-        id: 6,
-        title: 'Financiamento Veículo',
-        company: 'Banco ABC',
-        category: 'Financiamentos',
-        original_amount: 890.50,
-        final_amount: 890.50,
-        due_date: '2025-09-20',
-        payment_date: '2025-09-19',
-        status: 'paid',
-        payment_method: 'Débito Automático'
-      }
-    ];
-  };
+
 
   const saveBills = (updatedBills) => {
     try {
