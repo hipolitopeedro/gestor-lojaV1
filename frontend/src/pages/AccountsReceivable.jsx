@@ -23,12 +23,32 @@ import {
   MapPin,
   Calculator,
   TrendingUp,
-  Banknote
+  Banknote,
+  Trash2,
+  Edit2
 } from 'lucide-react';
+import dataService from '@/services/dataService';
 
 const AccountsReceivable = ({ onNavigate }) => {
   const [receivables, setReceivables] = useState([]);
-  const [summary, setSummary] = useState({});
+  const [summary, setSummary] = useState({
+    total_receivables: 0,
+    pending_receivables: 0,
+    partial_receivables: 0,
+    paid_receivables: 0,
+    overdue_receivables: 0,
+    receivables_due_this_week: 0,
+    total_amount: 0,
+    total_pending_amount: 0,
+    total_paid_amount: 0,
+    total_overdue_amount: 0,
+    types: {
+      fiado: { count: 0, total_amount: 0, pending_amount: 0 },
+      machine_receipt: { count: 0, total_amount: 0, pending_amount: 0 },
+      invoice: { count: 0, total_amount: 0, pending_amount: 0 }
+    },
+    top_customers: []
+  });
   const [showAddReceivable, setShowAddReceivable] = useState(false);
   const [showAddPayment, setShowAddPayment] = useState(false);
   const [selectedReceivable, setSelectedReceivable] = useState(null);
@@ -38,149 +58,101 @@ const AccountsReceivable = ({ onNavigate }) => {
     customer: ''
   });
 
-  // Mock data for demonstration
+  // Load receivables from localStorage
   useEffect(() => {
-    const mockSummary = {
-      total_receivables: 18,
-      pending_receivables: 8,
-      partial_receivables: 3,
-      paid_receivables: 6,
-      overdue_receivables: 1,
-      receivables_due_this_week: 4,
-      total_amount: 12450.80,
-      total_pending_amount: 8750.30,
-      total_paid_amount: 3700.50,
-      total_overdue_amount: 450.00,
-      types: {
-        fiado: { count: 12, total_amount: 8500.00, pending_amount: 6200.00 },
-        machine_receipt: { count: 4, total_amount: 2800.00, pending_amount: 1850.00 },
-        invoice: { count: 2, total_amount: 1150.80, pending_amount: 700.30 }
-      },
-      top_customers: [
-        { name: 'João Silva', total_amount: 2450.00, pending_amount: 1200.00, count: 5 },
-        { name: 'Maria Santos', total_amount: 1850.00, pending_amount: 950.00, count: 3 },
-        { name: 'Pedro Costa', total_amount: 1650.00, pending_amount: 0, count: 4 }
-      ]
+    loadReceivables();
+  }, []);
+
+  const loadReceivables = () => {
+    try {
+      const storedReceivables = localStorage.getItem('lupa_receivables');
+      const receivablesData = storedReceivables ? JSON.parse(storedReceivables) : [];
+      setReceivables(receivablesData);
+      updateSummary(receivablesData);
+    } catch (error) {
+      console.error('Error loading receivables:', error);
+      setReceivables([]);
+      updateSummary([]);
+    }
+  };
+
+  const updateSummary = (receivablesData) => {
+    const pendingReceivables = receivablesData.filter(r => r.status === 'pending' && !r.is_overdue);
+    const partialReceivables = receivablesData.filter(r => r.status === 'partial');
+    const paidReceivables = receivablesData.filter(r => r.status === 'paid');
+    const overdueReceivables = receivablesData.filter(r => r.is_overdue);
+
+    const today = new Date();
+    const nextWeek = new Date();
+    nextWeek.setDate(today.getDate() + 7);
+
+    const receivablesDueThisWeek = receivablesData.filter(r => {
+      const dueDate = new Date(r.due_date);
+      return r.status !== 'paid' && dueDate >= today && dueDate <= nextWeek;
+    });
+
+    const totalAmount = receivablesData.reduce((sum, r) => sum + r.original_amount, 0);
+    const totalPendingAmount = pendingReceivables.reduce((sum, r) => sum + r.remaining_amount, 0) +
+                               partialReceivables.reduce((sum, r) => sum + r.remaining_amount, 0);
+    const totalPaidAmount = paidReceivables.reduce((sum, r) => sum + r.original_amount, 0);
+    const totalOverdueAmount = overdueReceivables.reduce((sum, r) => sum + r.remaining_amount, 0);
+
+    // Calculate types breakdown
+    const types = {
+      fiado: { count: 0, total_amount: 0, pending_amount: 0 },
+      machine_receipt: { count: 0, total_amount: 0, pending_amount: 0 },
+      invoice: { count: 0, total_amount: 0, pending_amount: 0 }
     };
 
-    const mockReceivables = [
-      {
-        id: 1,
-        customer_name: 'João Silva',
-        customer_phone: '(11) 99999-1111',
-        type: 'fiado',
-        description: 'Compra de produtos diversos',
-        reference_number: 'FD001',
-        original_amount: 450.00,
-        paid_amount: 0,
-        remaining_amount: 450.00,
-        issue_date: '2025-08-15',
-        due_date: '2025-09-15',
-        status: 'pending',
-        is_overdue: false,
-        days_until_due: 14,
-        total_with_fees: 450.00,
-        payments: []
-      },
-      {
-        id: 2,
-        customer_name: 'Maria Santos',
-        customer_phone: '(11) 99999-2222',
-        type: 'machine_receipt',
-        description: 'Pagamento máquina de cartão',
-        reference_number: 'MC002',
-        machine_id: 'MACH001',
-        machine_location: 'Loja Centro',
-        original_amount: 280.50,
-        paid_amount: 100.00,
-        remaining_amount: 180.50,
-        issue_date: '2025-08-20',
-        due_date: '2025-09-05',
-        status: 'partial',
-        is_overdue: false,
-        days_until_due: 4,
-        total_with_fees: 180.50,
-        payments: [
-          {
-            id: 1,
-            amount: 100.00,
-            payment_method: 'PIX',
-            payment_date: '2025-08-25',
-            notes: 'Pagamento parcial'
-          }
-        ]
-      },
-      {
-        id: 3,
-        customer_name: 'Pedro Costa',
-        customer_phone: '(11) 99999-3333',
-        type: 'fiado',
-        description: 'Fiado semanal - produtos alimentícios',
-        reference_number: 'FD003',
-        original_amount: 320.00,
-        paid_amount: 320.00,
-        remaining_amount: 0,
-        issue_date: '2025-08-10',
-        due_date: '2025-08-25',
-        last_payment_date: '2025-08-24',
-        status: 'paid',
-        is_overdue: false,
-        days_until_due: 0,
-        total_with_fees: 0,
-        payments: [
-          {
-            id: 2,
-            amount: 320.00,
-            payment_method: 'Dinheiro',
-            payment_date: '2025-08-24',
-            notes: 'Pagamento integral'
-          }
-        ]
-      },
-      {
-        id: 4,
-        customer_name: 'Ana Oliveira',
-        customer_phone: '(11) 99999-4444',
-        type: 'fiado',
-        description: 'Compra de bebidas e lanches',
-        reference_number: 'FD004',
-        original_amount: 150.00,
-        paid_amount: 0,
-        remaining_amount: 150.00,
-        interest_rate: 2.0,
-        late_fee: 10.00,
-        issue_date: '2025-08-05',
-        due_date: '2025-08-25',
-        status: 'overdue',
-        is_overdue: true,
-        days_overdue: 7,
-        days_until_due: -7,
-        total_with_fees: 167.00,
-        payments: []
-      },
-      {
-        id: 5,
-        customer_name: 'Carlos Mendes',
-        customer_phone: '(11) 99999-5555',
-        type: 'invoice',
-        description: 'Serviços prestados - consultoria',
-        reference_number: 'INV005',
-        original_amount: 850.00,
-        paid_amount: 0,
-        remaining_amount: 850.00,
-        issue_date: '2025-08-28',
-        due_date: '2025-09-12',
-        status: 'pending',
-        is_overdue: false,
-        days_until_due: 11,
-        total_with_fees: 850.00,
-        payments: []
+    receivablesData.forEach(r => {
+      if (types[r.type]) {
+        types[r.type].count++;
+        types[r.type].total_amount += r.original_amount;
+        if (r.status !== 'paid') {
+          types[r.type].pending_amount += r.remaining_amount;
+        }
       }
-    ];
+    });
 
-    setSummary(mockSummary);
-    setReceivables(mockReceivables);
-  }, []);
+    // Get top customers
+    const customerMap = {};
+    receivablesData.forEach(r => {
+      if (!customerMap[r.customer_name]) {
+        customerMap[r.customer_name] = { total_amount: 0, pending_amount: 0, count: 0 };
+      }
+      customerMap[r.customer_name].total_amount += r.original_amount;
+      customerMap[r.customer_name].pending_amount += r.remaining_amount;
+      customerMap[r.customer_name].count++;
+    });
+
+    const topCustomers = Object.entries(customerMap)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.total_amount - a.total_amount)
+      .slice(0, 5);
+
+    setSummary({
+      total_receivables: receivablesData.length,
+      pending_receivables: pendingReceivables.length,
+      partial_receivables: partialReceivables.length,
+      paid_receivables: paidReceivables.length,
+      overdue_receivables: overdueReceivables.length,
+      receivables_due_this_week: receivablesDueThisWeek.length,
+      total_amount: totalAmount,
+      total_pending_amount: totalPendingAmount,
+      total_paid_amount: totalPaidAmount,
+      total_overdue_amount: totalOverdueAmount,
+      types,
+      top_customers: topCustomers
+    });
+  };
+
+  const saveReceivables = (updatedReceivables) => {
+    try {
+      localStorage.setItem('lupa_receivables', JSON.stringify(updatedReceivables));
+    } catch (error) {
+      console.error('Error saving receivables:', error);
+    }
+  };
 
   const getStatusColor = (status, isOverdue) => {
     if (isOverdue) return 'destructive';
@@ -248,7 +220,6 @@ const AccountsReceivable = ({ onNavigate }) => {
   });
 
   const handleAddPayment = (receivableId, amount, paymentMethod, notes) => {
-    // Mock payment addition
     setReceivables(receivables.map(r => {
       if (r.id === receivableId) {
         const newPaidAmount = r.paid_amount + amount;
@@ -261,14 +232,16 @@ const AccountsReceivable = ({ onNavigate }) => {
           notes
         };
         
-        return {
+        const updated = {
           ...r,
           paid_amount: newPaidAmount,
           remaining_amount: newRemainingAmount,
           status: newRemainingAmount <= 0 ? 'paid' : 'partial',
           last_payment_date: new Date().toISOString().split('T')[0],
-          payments: [...r.payments, newPayment]
+          payments: [...(r.payments || []), newPayment]
         };
+        
+        return updated;
       }
       return r;
     }));
@@ -277,11 +250,47 @@ const AccountsReceivable = ({ onNavigate }) => {
     setSelectedReceivable(null);
   };
 
+  const handleAddReceivable = (receivable) => {
+    const newReceivable = {
+      ...receivable,
+      id: Date.now(),
+      paid_amount: 0,
+      remaining_amount: receivable.original_amount,
+      status: 'pending',
+      is_overdue: false,
+      payments: [],
+      issue_date: new Date().toISOString().split('T')[0]
+    };
+    
+    const updatedReceivables = [...receivables, newReceivable];
+    setReceivables(updatedReceivables);
+    saveReceivables(updatedReceivables);
+    updateSummary(updatedReceivables);
+    setShowAddReceivable(false);
+  };
+
+  const handleDeleteReceivable = (receivableId) => {
+    if (window.confirm('Tem certeza que deseja excluir esta conta a receber?')) {
+      const updatedReceivables = receivables.filter(r => r.id !== receivableId);
+      setReceivables(updatedReceivables);
+      saveReceivables(updatedReceivables);
+      updateSummary(updatedReceivables);
+    }
+  };
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
   if (showAddReceivable) {
-    return <AddReceivableForm onBack={() => setShowAddReceivable(false)} onSave={(receivable) => {
-      setReceivables([...receivables, { ...receivable, id: Date.now() }]);
-      setShowAddReceivable(false);
-    }} />;
+    return <AddReceivableForm onBack={() => setShowAddReceivable(false)} onSave={handleAddReceivable} />;
   }
 
   if (showAddPayment && selectedReceivable) {
@@ -332,7 +341,7 @@ const AccountsReceivable = ({ onNavigate }) => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">
-                R$ {summary.total_pending_amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {formatCurrency(summary.total_pending_amount)}
               </div>
               <p className="text-xs text-gray-600">
                 {summary.pending_receivables + summary.partial_receivables} contas pendentes
@@ -347,7 +356,7 @@ const AccountsReceivable = ({ onNavigate }) => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                R$ {summary.total_paid_amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {formatCurrency(summary.total_paid_amount)}
               </div>
               <p className="text-xs text-gray-600">
                 {summary.paid_receivables} contas pagas
@@ -362,7 +371,7 @@ const AccountsReceivable = ({ onNavigate }) => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                R$ {summary.total_overdue_amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {formatCurrency(summary.total_overdue_amount)}
               </div>
               <p className="text-xs text-gray-600">
                 {summary.overdue_receivables} contas vencidas
@@ -398,15 +407,15 @@ const AccountsReceivable = ({ onNavigate }) => {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Total:</span>
-                    <span className="font-medium">R$ {data.total_amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    <span className="text-sm font-semibold">{formatCurrency(data.total_amount)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Pendente:</span>
-                    <span className="font-medium text-orange-600">R$ {data.pending_amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    <span className="text-sm font-semibold text-orange-600">{formatCurrency(data.pending_amount)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Contas:</span>
-                    <span className="font-medium">{data.count}</span>
+                    <span className="text-sm font-semibold">{data.count}</span>
                   </div>
                 </div>
               </CardContent>
@@ -414,47 +423,18 @@ const AccountsReceivable = ({ onNavigate }) => {
           ))}
         </div>
 
-        {/* Top Customers */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Principais Clientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {summary.top_customers?.map((customer, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">{customer.name}</h4>
-                      <p className="text-sm text-gray-600">{customer.count} transações</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">R$ {customer.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-                    {customer.pending_amount > 0 && (
-                      <p className="text-sm text-orange-600">
-                        R$ {customer.pending_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} pendente
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Filters */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Filtros</CardTitle>
+            <CardTitle className="flex items-center text-lg">
+              <Search className="h-5 w-5 mr-2" />
+              Filtros
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Buscar cliente..."
                   value={filters.customer}
@@ -462,15 +442,15 @@ const AccountsReceivable = ({ onNavigate }) => {
                   className="pl-10"
                 />
               </div>
-              
+
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="all">Todos os status</option>
                 <option value="pending">Pendentes</option>
-                <option value="partial">Parciais</option>
+                <option value="partial">Pagamento Parcial</option>
                 <option value="paid">Pagos</option>
                 <option value="overdue">Vencidos</option>
               </select>
@@ -478,7 +458,7 @@ const AccountsReceivable = ({ onNavigate }) => {
               <select
                 value={filters.type}
                 onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="all">Todos os tipos</option>
                 <option value="fiado">Fiado</option>
@@ -486,7 +466,10 @@ const AccountsReceivable = ({ onNavigate }) => {
                 <option value="invoice">Fatura</option>
               </select>
 
-              <Button variant="outline" onClick={() => setFilters({ status: 'all', type: 'all', customer: '' })}>
+              <Button
+                variant="outline"
+                onClick={() => setFilters({ status: 'all', type: 'all', customer: '' })}
+              >
                 Limpar Filtros
               </Button>
             </div>
@@ -494,109 +477,102 @@ const AccountsReceivable = ({ onNavigate }) => {
         </Card>
 
         {/* Receivables List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">
-              Contas a Receber ({filteredReceivables.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {filteredReceivables.map((receivable) => (
-                <div key={receivable.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      {getStatusIcon(receivable.status, receivable.is_overdue)}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="text-sm font-medium text-gray-900 truncate">
-                          {receivable.customer_name}
-                        </h3>
-                        <Badge variant={getStatusColor(receivable.status, receivable.is_overdue)}>
-                          {getStatusText(receivable.status, receivable.is_overdue, receivable.days_until_due, receivable.days_overdue)}
-                        </Badge>
+        <div className="space-y-4">
+          {filteredReceivables.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <div className="text-gray-400 mb-4">
+                  <Users className="h-12 w-12 mx-auto" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Nenhuma conta encontrada
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  {filters.customer || filters.status !== 'all' || filters.type !== 'all'
+                    ? 'Tente ajustar os filtros para encontrar contas.'
+                    : 'Você ainda não possui contas a receber registradas.'}
+                </p>
+                {!filters.customer && filters.status === 'all' && filters.type === 'all' && (
+                  <Button onClick={() => setShowAddReceivable(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Conta
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            filteredReceivables.map((receivable) => (
+              <Card key={receivable.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h3 className="font-semibold text-gray-900">{receivable.customer_name}</h3>
                         <Badge className={getTypeColor(receivable.type)}>
                           {getTypeText(receivable.type)}
                         </Badge>
+                        <Badge variant={getStatusColor(receivable.status, receivable.is_overdue)}>
+                          {getStatusText(receivable.status, receivable.is_overdue, receivable.days_until_due, receivable.days_overdue)}
+                        </Badge>
                       </div>
                       
-                      <div className="flex items-center space-x-4 mt-1">
-                        <p className="text-sm text-gray-600">{receivable.description}</p>
-                        {receivable.reference_number && (
-                          <Badge variant="outline">{receivable.reference_number}</Badge>
-                        )}
-                        <p className="text-sm text-gray-600">
-                          Vencimento: {new Date(receivable.due_date).toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
+                      <p className="text-sm text-gray-600 mb-3">{receivable.description}</p>
                       
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-600">Valor Original:</span>
+                          <p className="font-semibold">{formatCurrency(receivable.original_amount)}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Pago:</span>
+                          <p className="font-semibold text-green-600">{formatCurrency(receivable.paid_amount)}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Restante:</span>
+                          <p className="font-semibold text-orange-600">{formatCurrency(receivable.remaining_amount)}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Vencimento:</span>
+                          <p className="font-semibold">{formatDate(receivable.due_date)}</p>
+                        </div>
+                      </div>
+
                       {receivable.customer_phone && (
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Phone className="w-3 h-3 text-gray-400" />
-                          <p className="text-xs text-gray-500">{receivable.customer_phone}</p>
-                        </div>
-                      )}
-                      
-                      {receivable.machine_id && (
-                        <div className="flex items-center space-x-2 mt-1">
-                          <CreditCard className="w-3 h-3 text-gray-400" />
-                          <p className="text-xs text-gray-500">
-                            Máquina: {receivable.machine_id} - {receivable.machine_location}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-gray-900">
-                        R$ {receivable.remaining_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </p>
-                      {receivable.paid_amount > 0 && (
-                        <p className="text-sm text-green-600">
-                          R$ {receivable.paid_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} pago
-                        </p>
-                      )}
-                      {receivable.total_with_fees > receivable.remaining_amount && (
-                        <p className="text-sm text-red-600">
-                          +R$ {(receivable.total_with_fees - receivable.remaining_amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} juros/multa
-                        </p>
-                      )}
-                      {receivable.payments.length > 0 && (
-                        <p className="text-xs text-gray-600">
-                          {receivable.payments.length} pagamento(s)
+                        <p className="text-sm text-gray-600 mt-3 flex items-center">
+                          <Phone className="h-4 w-4 mr-2" />
+                          {receivable.customer_phone}
                         </p>
                       )}
                     </div>
 
-                    {receivable.status !== 'paid' && (
-                      <Button 
-                        onClick={() => {
-                          setSelectedReceivable(receivable);
-                          setShowAddPayment(true);
-                        }}
-                        className="bg-green-600 hover:bg-green-700"
+                    <div className="flex space-x-2 ml-4">
+                      {receivable.status !== 'paid' && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedReceivable(receivable);
+                            setShowAddPayment(true);
+                          }}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <DollarSign className="h-4 w-4 mr-1" />
+                          Registrar Pagamento
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeleteReceivable(receivable.id)}
                       >
-                        <Banknote className="w-4 h-4 mr-2" />
-                        Receber
+                        <Trash2 className="h-4 w-4" />
                       </Button>
-                    )}
+                    </div>
                   </div>
-                </div>
-              ))}
-              
-              {filteredReceivables.length === 0 && (
-                <div className="text-center py-8">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Nenhuma conta encontrada</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
@@ -613,188 +589,177 @@ const AddReceivableForm = ({ onBack, onSave }) => {
     reference_number: '',
     original_amount: '',
     due_date: '',
-    payment_terms: '',
-    machine_id: '',
-    machine_location: '',
     notes: ''
   });
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    if (!formData.customer_name || !formData.original_amount || !formData.due_date) {
+      alert('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
+
     onSave({
       ...formData,
-      original_amount: parseFloat(formData.original_amount),
-      remaining_amount: parseFloat(formData.original_amount),
-      paid_amount: 0,
-      issue_date: new Date().toISOString().split('T')[0],
-      status: 'pending',
-      is_overdue: false,
-      days_until_due: Math.ceil((new Date(formData.due_date) - new Date()) / (1000 * 60 * 60 * 24)),
-      payments: []
+      original_amount: parseFloat(formData.original_amount)
     });
   };
 
   return (
     <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       <div className="max-w-2xl mx-auto">
+        <Button variant="outline" onClick={onBack} className="mb-6">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar
+        </Button>
+
         <Card>
           <CardHeader>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={onBack}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-              <div>
-                <CardTitle className="flex items-center">
-                  <Plus className="w-5 h-5 mr-2 text-blue-600" />
-                  Nova Conta a Receber
-                </CardTitle>
-                <CardDescription>Adicione uma nova conta a receber</CardDescription>
-              </div>
-            </div>
+            <CardTitle>Nova Conta a Receber</CardTitle>
+            <CardDescription>Registre um novo fiado, máquina ou fatura</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="customer_name">Nome do Cliente *</Label>
-                  <Input
-                    id="customer_name"
-                    value={formData.customer_name}
-                    onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-                    placeholder="Nome completo do cliente"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="customer_phone">Telefone</Label>
-                  <Input
-                    id="customer_phone"
-                    value={formData.customer_phone}
-                    onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
-                    placeholder="(11) 99999-9999"
-                  />
-                </div>
-              </div>
-
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Tipo */}
               <div>
-                <Label htmlFor="type">Tipo *</Label>
+                <Label htmlFor="type">Tipo de Conta *</Label>
                 <select
                   id="type"
+                  name="type"
                   value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded-md mt-1"
                 >
                   <option value="fiado">Fiado</option>
                   <option value="machine_receipt">Máquina de Cartão</option>
-                  <option value="invoice">Fatura/Serviço</option>
-                  <option value="other">Outros</option>
+                  <option value="invoice">Fatura</option>
                 </select>
               </div>
 
+              {/* Cliente */}
+              <div>
+                <Label htmlFor="customer_name">Nome do Cliente *</Label>
+                <Input
+                  id="customer_name"
+                  name="customer_name"
+                  value={formData.customer_name}
+                  onChange={handleChange}
+                  placeholder="Ex: João Silva"
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Telefone */}
+              <div>
+                <Label htmlFor="customer_phone">Telefone</Label>
+                <Input
+                  id="customer_phone"
+                  name="customer_phone"
+                  value={formData.customer_phone}
+                  onChange={handleChange}
+                  placeholder="Ex: (11) 99999-9999"
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <Label htmlFor="customer_email">Email</Label>
+                <Input
+                  id="customer_email"
+                  name="customer_email"
+                  type="email"
+                  value={formData.customer_email}
+                  onChange={handleChange}
+                  placeholder="Ex: joao@example.com"
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Descrição */}
               <div>
                 <Label htmlFor="description">Descrição *</Label>
                 <Input
                   id="description"
+                  name="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Descreva o que foi vendido ou o serviço prestado"
-                  required
+                  onChange={handleChange}
+                  placeholder="Ex: Compra de produtos diversos"
+                  className="mt-1"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="reference_number">Número de Referência</Label>
-                  <Input
-                    id="reference_number"
-                    value={formData.reference_number}
-                    onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
-                    placeholder="Ex: FD001, INV123"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="original_amount">Valor *</Label>
-                  <Input
-                    id="original_amount"
-                    type="number"
-                    step="0.01"
-                    value={formData.original_amount}
-                    onChange={(e) => setFormData({ ...formData, original_amount: e.target.value })}
-                    placeholder="0,00"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="due_date">Data de Vencimento *</Label>
-                  <Input
-                    id="due_date"
-                    type="date"
-                    value={formData.due_date}
-                    onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="payment_terms">Condições de Pagamento</Label>
-                  <Input
-                    id="payment_terms"
-                    value={formData.payment_terms}
-                    onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
-                    placeholder="Ex: À vista, 30 dias"
-                  />
-                </div>
-              </div>
-
-              {formData.type === 'machine_receipt' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="machine_id">ID da Máquina</Label>
-                    <Input
-                      id="machine_id"
-                      value={formData.machine_id}
-                      onChange={(e) => setFormData({ ...formData, machine_id: e.target.value })}
-                      placeholder="Ex: MACH001"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="machine_location">Local da Máquina</Label>
-                    <Input
-                      id="machine_location"
-                      value={formData.machine_location}
-                      onChange={(e) => setFormData({ ...formData, machine_location: e.target.value })}
-                      placeholder="Ex: Loja Centro"
-                    />
-                  </div>
-                </div>
-              )}
-
+              {/* Número de Referência */}
               <div>
-                <Label htmlFor="notes">Observações</Label>
+                <Label htmlFor="reference_number">Número de Referência</Label>
+                <Input
+                  id="reference_number"
+                  name="reference_number"
+                  value={formData.reference_number}
+                  onChange={handleChange}
+                  placeholder="Ex: FD001"
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Valor */}
+              <div>
+                <Label htmlFor="original_amount">Valor *</Label>
+                <Input
+                  id="original_amount"
+                  name="original_amount"
+                  type="number"
+                  step="0.01"
+                  value={formData.original_amount}
+                  onChange={handleChange}
+                  placeholder="0.00"
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Data de Vencimento */}
+              <div>
+                <Label htmlFor="due_date">Data de Vencimento *</Label>
+                <Input
+                  id="due_date"
+                  name="due_date"
+                  type="date"
+                  value={formData.due_date}
+                  onChange={handleChange}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Notas */}
+              <div>
+                <Label htmlFor="notes">Notas</Label>
                 <textarea
                   id="notes"
+                  name="notes"
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Observações adicionais..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows={3}
+                  onChange={handleChange}
+                  placeholder="Observações adicionais"
+                  rows="3"
+                  className="w-full p-2 border border-gray-300 rounded-md mt-1"
                 />
               </div>
 
-              <div className="flex space-x-4">
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  Salvar Conta
+              {/* Botões */}
+              <div className="flex space-x-4 pt-6">
+                <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Conta
                 </Button>
-                <Button type="button" variant="outline" onClick={onBack}>
+                <Button type="button" variant="outline" onClick={onBack} className="flex-1">
                   Cancelar
                 </Button>
               </div>
@@ -814,108 +779,121 @@ const AddPaymentForm = ({ receivable, onBack, onSave }) => {
     notes: ''
   });
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      alert('Por favor, insira um valor válido');
+      return;
+    }
+
+    if (parseFloat(formData.amount) > receivable.remaining_amount) {
+      alert('O valor do pagamento não pode ser maior que o saldo devedor');
+      return;
+    }
+
     onSave(receivable.id, parseFloat(formData.amount), formData.payment_method, formData.notes);
   };
 
   return (
     <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       <div className="max-w-2xl mx-auto">
+        <Button variant="outline" onClick={onBack} className="mb-6">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar
+        </Button>
+
         <Card>
           <CardHeader>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={onBack}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-              <div>
-                <CardTitle className="flex items-center">
-                  <Banknote className="w-5 h-5 mr-2 text-green-600" />
-                  Receber Pagamento
-                </CardTitle>
-                <CardDescription>Cliente: {receivable.customer_name}</CardDescription>
-              </div>
-            </div>
+            <CardTitle>Registrar Pagamento</CardTitle>
+            <CardDescription>Cliente: {receivable.customer_name}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Receivable Info */}
-            <div className="bg-white p-4 rounded-lg border">
-              <h3 className="font-medium mb-2">Informações da Conta</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+          <CardContent>
+            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="text-gray-600">Valor Original:</span>
-                  <span className="ml-2 font-medium">R$ {receivable.original_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  <p className="text-sm text-gray-600">Valor Original</p>
+                  <p className="text-lg font-semibold">
+                    R$ {receivable.original_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
                 </div>
                 <div>
-                  <span className="text-gray-600">Valor Pago:</span>
-                  <span className="ml-2 font-medium text-green-600">R$ {receivable.paid_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Valor Restante:</span>
-                  <span className="ml-2 font-medium text-orange-600">R$ {receivable.remaining_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Vencimento:</span>
-                  <span className="ml-2 font-medium">{new Date(receivable.due_date).toLocaleDateString('pt-BR')}</span>
+                  <p className="text-sm text-gray-600">Saldo Devedor</p>
+                  <p className="text-lg font-semibold text-orange-600">
+                    R$ {receivable.remaining_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Valor do Pagamento */}
               <div>
                 <Label htmlFor="amount">Valor do Pagamento *</Label>
                 <Input
                   id="amount"
+                  name="amount"
                   type="number"
                   step="0.01"
-                  max={receivable.remaining_amount}
                   value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  placeholder="0,00"
-                  required
+                  onChange={handleChange}
+                  placeholder="0.00"
+                  className="mt-1"
+                  max={receivable.remaining_amount}
                 />
                 <p className="text-xs text-gray-600 mt-1">
                   Máximo: R$ {receivable.remaining_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>
               </div>
 
+              {/* Forma de Pagamento */}
               <div>
                 <Label htmlFor="payment_method">Forma de Pagamento *</Label>
                 <select
                   id="payment_method"
+                  name="payment_method"
                   value={formData.payment_method}
-                  onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded-md mt-1"
                 >
                   <option value="PIX">PIX</option>
                   <option value="Dinheiro">Dinheiro</option>
-                  <option value="Cartão Débito">Cartão Débito</option>
-                  <option value="Cartão Crédito">Cartão Crédito</option>
+                  <option value="Débito">Débito</option>
+                  <option value="Crédito">Crédito</option>
+                  <option value="Cheque">Cheque</option>
                   <option value="Transferência">Transferência</option>
-                  <option value="Outros">Outros</option>
                 </select>
               </div>
 
+              {/* Notas */}
               <div>
-                <Label htmlFor="notes">Observações</Label>
+                <Label htmlFor="notes">Notas</Label>
                 <textarea
                   id="notes"
+                  name="notes"
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Observações sobre o pagamento..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows={3}
+                  onChange={handleChange}
+                  placeholder="Observações adicionais"
+                  rows="3"
+                  className="w-full p-2 border border-gray-300 rounded-md mt-1"
                 />
               </div>
 
-              <div className="flex space-x-4">
-                <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                  <Banknote className="w-4 h-4 mr-2" />
-                  Confirmar Pagamento
+              {/* Botões */}
+              <div className="flex space-x-4 pt-6">
+                <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Registrar Pagamento
                 </Button>
-                <Button type="button" variant="outline" onClick={onBack}>
+                <Button type="button" variant="outline" onClick={onBack} className="flex-1">
                   Cancelar
                 </Button>
               </div>
