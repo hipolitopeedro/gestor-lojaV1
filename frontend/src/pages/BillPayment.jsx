@@ -16,10 +16,11 @@ import {
   Receipt,
   CreditCard,
   DollarSign,
+  Trash2,
+  Edit2,
   Settings
 } from 'lucide-react';
 import PaymentMethodManager from '@/components/transactions/PaymentMethodManager';
-import dataService from '@/services/dataService';
 
 const BillPayment = ({ onNavigate }) => {
   const [bills, setBills] = useState([]);
@@ -82,8 +83,6 @@ const BillPayment = ({ onNavigate }) => {
     });
   };
 
-
-
   const saveBills = (updatedBills) => {
     try {
       localStorage.setItem('lupa_bills', JSON.stringify(updatedBills));
@@ -138,12 +137,9 @@ const BillPayment = ({ onNavigate }) => {
   });
 
   const handlePayBill = (billId) => {
-    // In a real app, this would open a payment modal or redirect to payment flow
-    console.log('Paying bill:', billId);
-    // Mock payment
     const updatedBills = bills.map(bill => 
       bill.id === billId 
-        ? { ...bill, status: 'paid', payment_date: new Date().toISOString().split('T')[0], payment_method: 'PIX' }
+        ? { ...bill, status: 'paid', payment_date: new Date().toISOString().split('T')[0], payment_method: 'Dinheiro' }
         : bill
     );
     setBills(updatedBills);
@@ -160,6 +156,15 @@ const BillPayment = ({ onNavigate }) => {
     setShowAddBill(false);
   };
 
+  const handleDeleteBill = (billId) => {
+    if (window.confirm('Tem certeza que deseja excluir este boleto?')) {
+      const updatedBills = bills.filter(b => b.id !== billId);
+      setBills(updatedBills);
+      saveBills(updatedBills);
+      updateSummary(updatedBills);
+    }
+  };
+
   const handleScanBill = (billData) => {
     const newBill = { ...billData, id: Date.now() };
     const updatedBills = [...bills, newBill];
@@ -169,8 +174,11 @@ const BillPayment = ({ onNavigate }) => {
     setShowBarcodeScanner(false);
   };
 
-  const handlePaymentMethodManagerClose = () => {
-    setShowPaymentMethodManager(false);
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
   };
 
   if (showAddBill) {
@@ -181,11 +189,15 @@ const BillPayment = ({ onNavigate }) => {
     return <BarcodeScanner onBack={() => setShowBarcodeScanner(false)} onScan={handleScanBill} />;
   }
 
+  const handlePaymentMethodManagerClose = () => {
+    setShowPaymentMethodManager(false);
+  };
+
   return (
     <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       {/* Payment Method Manager Modal */}
       {showPaymentMethodManager && (
-        <PaymentMethodManager onClose={handlePaymentMethodManagerClose} />
+        <PaymentMethodManager onClose={handlePaymentMethodManagerClose} hideFeatures={true} />
       )}
 
       <div className="max-w-7xl mx-auto space-y-6">
@@ -206,13 +218,17 @@ const BillPayment = ({ onNavigate }) => {
               </div>
             </div>
             <div className="flex space-x-2">
+              <Button onClick={() => setShowPaymentMethodManager(true)} className="bg-white text-purple-600 hover:bg-gray-100">
+                <Settings className="w-4 h-4 mr-2" />
+                Formas de Pagamento
+              </Button>
               <Button onClick={() => setShowBarcodeScanner(true)} className="bg-white text-purple-600 hover:bg-gray-100">
                 <Scan className="w-4 h-4 mr-2" />
                 Escanear Código
               </Button>
               <Button onClick={() => setShowAddBill(true)} className="bg-white text-purple-600 hover:bg-gray-100">
                 <Plus className="w-4 h-4 mr-2" />
-                Nova Conta
+                Novo Boleto
               </Button>
             </div>
           </div>
@@ -228,7 +244,7 @@ const BillPayment = ({ onNavigate }) => {
             <CardContent>
               <div className="text-2xl font-bold text-orange-600">{summary.pending_bills}</div>
               <p className="text-xs text-gray-600">
-                R$ {summary.total_pending_amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {formatCurrency(summary.total_pending_amount || 0)}
               </p>
             </CardContent>
           </Card>
@@ -241,20 +257,20 @@ const BillPayment = ({ onNavigate }) => {
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{summary.paid_bills}</div>
               <p className="text-xs text-gray-600">
-                R$ {summary.total_paid_amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {formatCurrency(summary.total_paid_amount || 0)}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Contas Vencidas</CardTitle>
+              <CardTitle className="text-sm font-medium">Em Atraso</CardTitle>
               <AlertTriangle className="w-4 h-4 text-red-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">{summary.overdue_bills}</div>
               <p className="text-xs text-gray-600">
-                R$ {summary.total_overdue_amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {formatCurrency(summary.total_overdue_amount || 0)}
               </p>
             </CardContent>
           </Card>
@@ -271,62 +287,54 @@ const BillPayment = ({ onNavigate }) => {
           </Card>
         </div>
 
-        {/* Payment Methods Management Button */}
-        <div className="flex justify-end">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowPaymentMethodManager(true)}
-            className="flex items-center"
-          >
-            <Settings className="h-4 w-4 mr-2" />
-            Gerenciar Formas de Pagamento
-          </Button>
-        </div>
-
         {/* Filters */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Filtros</CardTitle>
+            <CardTitle className="flex items-center text-lg">
+              <Search className="h-5 w-5 mr-2" />
+              Filtros
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Buscar contas..."
+                  placeholder="Buscar boleto..."
                   value={filters.search}
                   onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                   className="pl-10"
                 />
               </div>
-              
+
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="all">Todos os status</option>
                 <option value="pending">Pendentes</option>
-                <option value="paid">Pagas</option>
-                <option value="overdue">Vencidas</option>
+                <option value="paid">Pagos</option>
+                <option value="overdue">Vencidos</option>
               </select>
 
               <select
                 value={filters.category}
                 onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="all">Todas as categorias</option>
                 <option value="Energia">Energia</option>
                 <option value="Água">Água</option>
-                <option value="Telecomunicações">Telecomunicações</option>
-                <option value="Gás">Gás</option>
-                <option value="Seguros">Seguros</option>
-                <option value="Financiamentos">Financiamentos</option>
+                <option value="Internet">Internet</option>
+                <option value="Aluguel">Aluguel</option>
+                <option value="Outros">Outros</option>
               </select>
 
-              <Button variant="outline" onClick={() => setFilters({ status: 'all', category: 'all', search: '' })}>
+              <Button
+                variant="outline"
+                onClick={() => setFilters({ status: 'all', category: 'all', search: '' })}
+              >
                 Limpar Filtros
               </Button>
             </div>
@@ -336,80 +344,79 @@ const BillPayment = ({ onNavigate }) => {
         {/* Bills List */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">
-              Contas ({filteredBills.length})
-            </CardTitle>
+            <CardTitle>Boletos Registrados</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {filteredBills.map((bill) => (
-                <div key={bill.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      {getStatusIcon(bill.status, bill.is_overdue)}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="text-sm font-medium text-gray-900 truncate">
-                          {bill.title}
-                        </h3>
-                        <Badge variant={getStatusColor(bill.status, bill.is_overdue)}>
-                          {getStatusText(bill.status, bill.is_overdue, bill.days_until_due)}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center space-x-4 mt-1">
-                        <p className="text-sm text-gray-600">{bill.company}</p>
-                        <Badge variant="outline">{bill.category}</Badge>
-                        <p className="text-sm text-gray-600">
-                          Vencimento: {new Date(bill.due_date).toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                      
-                      {bill.barcode && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Código: {bill.barcode.slice(0, 20)}...
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-gray-900">
-                        R$ {bill.final_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </p>
-                      {bill.interest_amount > 0 && (
-                        <p className="text-sm text-red-600">
-                          +R$ {bill.interest_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} juros
-                        </p>
-                      )}
-                      {bill.payment_method && (
-                        <p className="text-xs text-gray-600">
-                          Pago via {bill.payment_method}
-                        </p>
-                      )}
-                    </div>
-
-                    {bill.status === 'pending' && (
-                      <Button 
-                        onClick={() => handlePayBill(bill.id)}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Pagar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              
-              {filteredBills.length === 0 && (
+              {filteredBills.length === 0 ? (
                 <div className="text-center py-8">
                   <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Nenhuma conta encontrada</p>
+                  <p className="text-gray-600 mb-4">Nenhum boleto encontrado</p>
+                  <Button onClick={() => setShowAddBill(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Boleto
+                  </Button>
                 </div>
+              ) : (
+                filteredBills.map(bill => (
+                  <div key={bill.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="font-semibold text-gray-900">{bill.title}</h3>
+                          <Badge variant={getStatusColor(bill.status, bill.is_overdue)}>
+                            {getStatusText(bill.status, bill.is_overdue, bill.days_until_due)}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-600">Empresa:</span>
+                            <p className="font-semibold">{bill.company}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Categoria:</span>
+                            <p className="font-semibold">{bill.category}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Vencimento:</span>
+                            <p className="font-semibold">{new Date(bill.due_date).toLocaleDateString('pt-BR')}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Valor:</span>
+                            <p className="font-semibold text-orange-600">{formatCurrency(bill.final_amount)}</p>
+                          </div>
+                        </div>
+
+                        {bill.barcode && (
+                          <p className="text-xs text-gray-500 mt-2">
+                            Código: {bill.barcode}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex space-x-2 ml-4">
+                        {bill.status === 'pending' && (
+                          <Button
+                            size="sm"
+                            onClick={() => handlePayBill(bill.id)}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <CreditCard className="h-4 w-4 mr-1" />
+                            Pagar
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteBill(bill.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </CardContent>
@@ -427,12 +434,26 @@ const AddBillForm = ({ onBack, onSave }) => {
     category: 'Energia',
     original_amount: '',
     due_date: '',
+    barcode: '',
     notes: ''
   });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    if (!formData.title || !formData.company || !formData.original_amount || !formData.due_date) {
+      alert('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
+
     // Calculate days until due
     const today = new Date();
     const dueDate = new Date(formData.due_date);
@@ -445,114 +466,132 @@ const AddBillForm = ({ onBack, onSave }) => {
       final_amount: parseFloat(formData.original_amount),
       status: 'pending',
       is_overdue: isOverdue,
-      days_until_due: daysUntilDue
+      days_until_due: daysUntilDue,
+      interest_amount: 0
     });
   };
 
   return (
     <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       <div className="max-w-2xl mx-auto">
+        <Button variant="outline" onClick={onBack} className="mb-6">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar
+        </Button>
+
         <Card>
           <CardHeader>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={onBack}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-              <div>
-                <CardTitle className="flex items-center">
-                  <Receipt className="w-5 h-5 mr-2 text-purple-600" />
-                  Nova Conta
-                </CardTitle>
-                <CardDescription>Adicione uma nova conta para pagamento</CardDescription>
-              </div>
-            </div>
+            <CardTitle>Novo Boleto</CardTitle>
+            <CardDescription>Adicione um novo boleto para pagamento</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Título */}
               <div>
                 <Label htmlFor="title">Título da Conta *</Label>
                 <Input
                   id="title"
+                  name="title"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={handleChange}
                   placeholder="Ex: Conta de Luz"
-                  required
+                  className="mt-1"
                 />
               </div>
 
+              {/* Empresa */}
               <div>
                 <Label htmlFor="company">Empresa *</Label>
                 <Input
                   id="company"
+                  name="company"
                   value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  onChange={handleChange}
                   placeholder="Ex: Companhia de Energia"
-                  required
+                  className="mt-1"
                 />
               </div>
 
+              {/* Categoria */}
               <div>
                 <Label htmlFor="category">Categoria *</Label>
                 <select
                   id="category"
+                  name="category"
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded-md mt-1"
                 >
                   <option value="Energia">Energia</option>
                   <option value="Água">Água</option>
-                  <option value="Telecomunicações">Telecomunicações</option>
-                  <option value="Gás">Gás</option>
-                  <option value="Seguros">Seguros</option>
-                  <option value="Financiamentos">Financiamentos</option>
+                  <option value="Internet">Internet</option>
+                  <option value="Aluguel">Aluguel</option>
                   <option value="Outros">Outros</option>
                 </select>
               </div>
 
+              {/* Valor */}
               <div>
-                <Label htmlFor="amount">Valor *</Label>
+                <Label htmlFor="original_amount">Valor *</Label>
                 <Input
-                  id="amount"
+                  id="original_amount"
+                  name="original_amount"
                   type="number"
                   step="0.01"
                   value={formData.original_amount}
-                  onChange={(e) => setFormData({ ...formData, original_amount: e.target.value })}
-                  placeholder="0,00"
-                  required
+                  onChange={handleChange}
+                  placeholder="0.00"
+                  className="mt-1"
                 />
               </div>
 
+              {/* Data de Vencimento */}
               <div>
                 <Label htmlFor="due_date">Data de Vencimento *</Label>
                 <Input
                   id="due_date"
+                  name="due_date"
                   type="date"
                   value={formData.due_date}
-                  onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                  required
+                  onChange={handleChange}
+                  className="mt-1"
                 />
               </div>
 
+              {/* Código de Barras */}
               <div>
-                <Label htmlFor="notes">Observações</Label>
+                <Label htmlFor="barcode">Código de Barras</Label>
+                <Input
+                  id="barcode"
+                  name="barcode"
+                  value={formData.barcode}
+                  onChange={handleChange}
+                  placeholder="Ex: 12345.67890 12345.678901 12345.678901 1 12345678901234"
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Notas */}
+              <div>
+                <Label htmlFor="notes">Notas</Label>
                 <textarea
                   id="notes"
+                  name="notes"
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Observações adicionais..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows={3}
+                  onChange={handleChange}
+                  placeholder="Observações adicionais"
+                  rows="3"
+                  className="w-full p-2 border border-gray-300 rounded-md mt-1"
                 />
               </div>
 
-              <div className="flex space-x-4">
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  Salvar Conta
+              {/* Botões */}
+              <div className="flex space-x-4 pt-6">
+                <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Boleto
                 </Button>
-                <Button type="button" variant="outline" onClick={onBack}>
+                <Button type="button" variant="outline" onClick={onBack} className="flex-1">
                   Cancelar
                 </Button>
               </div>
@@ -567,105 +606,76 @@ const AddBillForm = ({ onBack, onSave }) => {
 // Barcode Scanner Component
 const BarcodeScanner = ({ onBack, onScan }) => {
   const [barcodeInput, setBarcodeInput] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleScan = async () => {
-    if (!barcodeInput.trim()) return;
+  const handleScan = () => {
+    if (!barcodeInput.trim()) {
+      alert('Por favor, insira um código de barras válido');
+      return;
+    }
+
+    // Parse barcode data
+    // Format: NNNNN.NNNNN NNNNN.NNNNN NNNNN.NNNNN N NNNNNNNNNNNNN
+    const parts = barcodeInput.trim().split(' ');
     
-    setIsProcessing(true);
-    
-    // Mock barcode processing
-    setTimeout(() => {
-      // Calculate days until due
-      const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 14); // Due in 14 days
-      
-      const mockBillData = {
-        title: 'Conta identificada por código de barras',
-        company: 'Empresa identificada',
-        category: 'Energia',
-        original_amount: 187.45,
-        final_amount: 187.45,
-        due_date: dueDate.toISOString().split('T')[0],
-        status: 'pending',
-        is_overdue: false,
-        days_until_due: 14,
-        barcode: barcodeInput
-      };
-      
-      onScan(mockBillData);
-      setIsProcessing(false);
-    }, 2000);
+    if (parts.length !== 4) {
+      alert('Formato de código de barras inválido');
+      return;
+    }
+
+    onScan({
+      title: 'Boleto Escaneado',
+      company: 'Empresa',
+      category: 'Outros',
+      original_amount: 100.00,
+      final_amount: 100.00,
+      due_date: new Date().toISOString().split('T')[0],
+      barcode: barcodeInput.trim(),
+      status: 'pending',
+      is_overdue: false,
+      days_until_due: 0,
+      interest_amount: 0
+    });
   };
 
   return (
     <div className="min-h-screen p-4" style={{ backgroundColor: '#f5f3ff' }}>
       <div className="max-w-2xl mx-auto">
+        <Button variant="outline" onClick={onBack} className="mb-6">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar
+        </Button>
+
         <Card>
           <CardHeader>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={onBack}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-              <div>
-                <CardTitle className="flex items-center">
-                  <Scan className="w-5 h-5 mr-2 text-purple-600" />
-                  Escanear Código de Barras
-                </CardTitle>
-                <CardDescription>Digite ou escaneie o código de barras da conta</CardDescription>
-              </div>
-            </div>
+            <CardTitle>Escanear Código de Barras</CardTitle>
+            <CardDescription>Insira o código de barras do boleto</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center">
-              <div className="w-32 h-32 mx-auto bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                <Scan className="w-16 h-16 text-purple-600" />
-              </div>
-              <p className="text-gray-600">
-                Digite o código de barras ou linha digitável da sua conta
-              </p>
-            </div>
-
-            <div className="space-y-4">
+          <CardContent>
+            <div className="space-y-6">
               <div>
-                <Label htmlFor="barcode">Código de Barras / Linha Digitável</Label>
+                <Label htmlFor="barcode">Código de Barras</Label>
                 <Input
                   id="barcode"
                   value={barcodeInput}
                   onChange={(e) => setBarcodeInput(e.target.value)}
-                  placeholder="Digite ou cole o código aqui..."
-                  className="text-center font-mono"
+                  placeholder="Ex: 12345.67890 12345.678901 12345.678901 1 12345678901234"
+                  className="mt-1"
+                  onKeyPress={(e) => e.key === 'Enter' && handleScan()}
                 />
+                <p className="text-xs text-gray-600 mt-2">
+                  Formato: NNNNN.NNNNN NNNNN.NNNNN NNNNN.NNNNN N NNNNNNNNNNNNN
+                </p>
               </div>
 
-              <Button 
-                onClick={handleScan}
-                disabled={!barcodeInput.trim() || isProcessing}
-                className="w-full bg-purple-600 hover:bg-purple-700"
-              >
-                {isProcessing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Processando...
-                  </>
-                ) : (
-                  <>
-                    <Scan className="w-4 h-4 mr-2" />
-                    Processar Código
-                  </>
-                )}
-              </Button>
-            </div>
-
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Como usar:</h4>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Digite ou cole o código de barras completo</li>
-                <li>• Ou use a linha digitável (números separados por espaços)</li>
-                <li>• O sistema identificará automaticamente os dados da conta</li>
-                <li>• Você poderá revisar e editar antes de salvar</li>
-              </ul>
+              <div className="flex space-x-4">
+                <Button onClick={handleScan} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  <Scan className="h-4 w-4 mr-2" />
+                  Processar Código
+                </Button>
+                <Button variant="outline" onClick={onBack} className="flex-1">
+                  Cancelar
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -675,3 +685,4 @@ const BarcodeScanner = ({ onBack, onScan }) => {
 };
 
 export default BillPayment;
+

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import dataService from '@/services/dataService';
 
-const PaymentMethodManager = ({ onClose }) => {
+const PaymentMethodManager = ({ onClose, hideFeatures = false }) => {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [editingMethod, setEditingMethod] = useState(null);
   const [newMethod, setNewMethod] = useState({ name: '', fee: '' });
@@ -37,8 +37,10 @@ const PaymentMethodManager = ({ onClose }) => {
       newErrors.name = 'Nome é obrigatório';
     }
 
-    if (data.fee === '' || isNaN(data.fee) || parseFloat(data.fee) < 0) {
-      newErrors.fee = 'Taxa deve ser um número válido (0 ou maior)';
+    if (!hideFeatures) {
+      if (data.fee === '' || isNaN(data.fee) || parseFloat(data.fee) < 0) {
+        newErrors.fee = 'Taxa deve ser um número válido (0 ou maior)';
+      }
     }
 
     setErrors(newErrors);
@@ -53,7 +55,7 @@ const PaymentMethodManager = ({ onClose }) => {
     const method = {
       id: Date.now().toString(),
       name: newMethod.name.trim(),
-      fee: parseFloat(newMethod.fee)
+      fee: hideFeatures ? 0 : parseFloat(newMethod.fee)
     };
 
     const updatedMethods = [...paymentMethods, method];
@@ -84,7 +86,7 @@ const PaymentMethodManager = ({ onClose }) => {
         ? {
             ...method,
             name: editingMethod.name.trim(),
-            fee: parseFloat(editingMethod.fee)
+            fee: hideFeatures ? 0 : parseFloat(editingMethod.fee)
           }
         : method
     );
@@ -98,203 +100,149 @@ const PaymentMethodManager = ({ onClose }) => {
 
   const handleDeleteMethod = (methodId) => {
     if (window.confirm('Tem certeza que deseja excluir este método de pagamento?')) {
-      const updatedMethods = paymentMethods.filter(method => method.id !== methodId);
-      
-      // Save to localStorage using dataService
+      const updatedMethods = paymentMethods.filter(m => m.id !== methodId);
       localStorage.setItem(dataService.PAYMENT_METHODS_KEY, JSON.stringify(updatedMethods));
       setPaymentMethods(updatedMethods);
     }
   };
 
-  const formatFee = (fee) => {
-    return `${fee.toFixed(1)}%`;
-  };
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle className="flex items-center">
-                <CreditCard className="h-5 w-5 mr-2" />
-                Gerenciar Métodos de Pagamento
-              </CardTitle>
-              <CardDescription>
-                Configure os métodos de pagamento e suas respectivas taxas
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div>
+            <CardTitle className="flex items-center">
+              <CreditCard className="h-5 w-5 mr-2" />
+              Gerenciar Formas de Pagamento
+            </CardTitle>
+            <CardDescription>
+              {hideFeatures ? 'Cadastre as formas de pagamento para boletos' : 'Adicione e configure suas formas de pagamento com taxas'}
+            </CardDescription>
           </div>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
         </CardHeader>
 
-        <CardContent>
-          {/* Info Card */}
-          <Card className="mb-6 border-blue-200 bg-blue-50">
-            <CardContent className="p-4 flex items-start">
-              <Info className="h-5 w-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm text-blue-800">
-                  Os métodos de pagamento cadastrados aqui estarão disponíveis para seleção ao registrar novas transações.
-                  As taxas configuradas serão automaticamente calculadas com base no valor da transação.
-                </p>
+        <CardContent className="space-y-6">
+          {/* Info Alert */}
+          {!hideFeatures && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
+              <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-semibold mb-1">Dica:</p>
+                <p>Configure as taxas de cada forma de pagamento. Estas taxas serão aplicadas automaticamente ao registrar transações.</p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          )}
 
-          {/* Add New Method Form */}
+          {/* Add Form */}
           {showAddForm && (
-            <Card className="mb-6 border-green-200 bg-green-50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Novo Método de Pagamento</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="new-name">Nome *</Label>
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h3 className="font-semibold mb-4">Adicionar Nova Forma de Pagamento</h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="new-method-name">Nome *</Label>
+                  <Input
+                    id="new-method-name"
+                    value={newMethod.name}
+                    onChange={(e) => setNewMethod({ ...newMethod, name: e.target.value })}
+                    placeholder="Ex: Cartão Elo"
+                    className={errors.name ? 'border-red-500' : ''}
+                  />
+                  {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
+                </div>
+
+                {!hideFeatures && (
+                  <div>
+                    <Label htmlFor="new-method-fee">Taxa (%) *</Label>
                     <Input
-                      id="new-name"
-                      placeholder="Ex: Cartão Visa"
-                      value={newMethod.name}
-                      onChange={(e) => setNewMethod(prev => ({ ...prev, name: e.target.value }))}
-                      className={errors.name ? 'border-red-500' : ''}
-                    />
-                    {errors.name && (
-                      <p className="text-sm text-red-500 flex items-center">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        {errors.name}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="new-fee" className="flex items-center">
-                      <Percent className="h-3 w-3 mr-1" />
-                      Taxa (%)
-                    </Label>
-                    <Input
-                      id="new-fee"
+                      id="new-method-fee"
                       type="number"
-                      step="0.1"
+                      step="0.01"
                       min="0"
-                      placeholder="0.0"
                       value={newMethod.fee}
-                      onChange={(e) => setNewMethod(prev => ({ ...prev, fee: e.target.value }))}
+                      onChange={(e) => setNewMethod({ ...newMethod, fee: e.target.value })}
+                      placeholder="Ex: 2.5"
                       className={errors.fee ? 'border-red-500' : ''}
                     />
-                    {errors.fee && (
-                      <p className="text-sm text-red-500 flex items-center">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        {errors.fee}
-                      </p>
-                    )}
+                    {errors.fee && <p className="text-red-600 text-sm mt-1">{errors.fee}</p>}
                   </div>
-                </div>
-                
-                <div className="flex gap-2 mt-4">
-                  <Button onClick={handleAddMethod} size="sm">
-                    <Save className="h-3 w-3 mr-1" />
+                )}
+
+                <div className="flex gap-2">
+                  <Button onClick={handleAddMethod} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                    <Save className="h-4 w-4 mr-2" />
                     Salvar
                   </Button>
                   <Button 
                     variant="outline" 
-                    size="sm" 
                     onClick={() => {
                       setShowAddForm(false);
                       setNewMethod({ name: '', fee: '' });
                       setErrors({});
                     }}
+                    className="flex-1"
                   >
                     Cancelar
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Add Button */}
-          {!showAddForm && (
-            <div className="mb-6">
-              <Button onClick={() => setShowAddForm(true)} className="w-full">
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Método de Pagamento
-              </Button>
+              </div>
             </div>
           )}
 
-          {/* Payment Methods List */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Métodos Cadastrados</h3>
+          {/* Methods List */}
+          <div className="space-y-2">
+            <h3 className="font-semibold">Formas de Pagamento Cadastradas</h3>
             
             {paymentMethods.length === 0 ? (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <CreditCard className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Nenhum método cadastrado
-                  </h3>
-                  <p className="text-gray-600">
-                    Adicione métodos de pagamento para começar a usar o sistema.
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="text-center py-8 text-gray-500">
+                <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>Nenhuma forma de pagamento cadastrada</p>
+              </div>
             ) : (
-              paymentMethods.map((method) => (
-                <Card key={method.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    {editingMethod && editingMethod.id === method.id ? (
+              <div className="space-y-2">
+                {paymentMethods.map(method => (
+                  <div key={method.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    {editingMethod?.id === method.id ? (
                       // Edit Mode
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Nome</Label>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor={`edit-name-${method.id}`}>Nome</Label>
                           <Input
+                            id={`edit-name-${method.id}`}
                             value={editingMethod.name}
-                            onChange={(e) => setEditingMethod(prev => ({ ...prev, name: e.target.value }))}
+                            onChange={(e) => setEditingMethod({ ...editingMethod, name: e.target.value })}
                             className={errors.name ? 'border-red-500' : ''}
                           />
-                          {errors.name && (
-                            <p className="text-sm text-red-500 flex items-center">
-                              <AlertCircle className="h-3 w-3 mr-1" />
-                              {errors.name}
-                            </p>
-                          )}
+                          {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
                         </div>
-                        
-                        <div className="space-y-2">
-                          <Label className="flex items-center">
-                            <Percent className="h-3 w-3 mr-1" />
-                            Taxa (%)
-                          </Label>
-                          <Input
-                            type="number"
-                            step="0.1"
-                            min="0"
-                            value={editingMethod.fee}
-                            onChange={(e) => setEditingMethod(prev => ({ ...prev, fee: e.target.value }))}
-                            className={errors.fee ? 'border-red-500' : ''}
-                          />
-                          {errors.fee && (
-                            <p className="text-sm text-red-500 flex items-center">
-                              <AlertCircle className="h-3 w-3 mr-1" />
-                              {errors.fee}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="md:col-span-2 flex gap-2">
-                          <Button onClick={handleUpdateMethod} size="sm">
-                            <Save className="h-3 w-3 mr-1" />
-                            Salvar
+
+                        {!hideFeatures && (
+                          <div>
+                            <Label htmlFor={`edit-fee-${method.id}`}>Taxa (%)</Label>
+                            <Input
+                              id={`edit-fee-${method.id}`}
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={editingMethod.fee}
+                              onChange={(e) => setEditingMethod({ ...editingMethod, fee: e.target.value })}
+                              className={errors.fee ? 'border-red-500' : ''}
+                            />
+                            {errors.fee && <p className="text-red-600 text-sm mt-1">{errors.fee}</p>}
+                          </div>
+                        )}
+
+                        <div className="flex gap-2">
+                          <Button onClick={handleUpdateMethod} className="flex-1 bg-green-600 hover:bg-green-700">
+                            <Save className="h-4 w-4 mr-2" />
+                            Salvar Alterações
                           </Button>
                           <Button 
                             variant="outline" 
-                            size="sm" 
-                            onClick={() => {
-                              setEditingMethod(null);
-                              setErrors({});
-                            }}
+                            onClick={() => setEditingMethod(null)}
+                            className="flex-1"
                           >
                             Cancelar
                           </Button>
@@ -303,47 +251,53 @@ const PaymentMethodManager = ({ onClose }) => {
                     ) : (
                       // View Mode
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <CreditCard className="h-5 w-5 text-gray-600" />
-                          <div>
-                            <h4 className="font-medium text-gray-900">{method.name}</h4>
-                            <div className="flex items-center space-x-2">
-                              <Badge variant={method.fee === 0 ? 'default' : 'secondary'}>
-                                Taxa: {formatFee(method.fee)}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="h-4 w-4 text-gray-600" />
+                            <span className="font-semibold">{method.name}</span>
+                            {!hideFeatures && (
+                              <Badge variant="secondary" className="ml-2">
+                                <Percent className="h-3 w-3 mr-1" />
+                                {method.fee}%
                               </Badge>
-                              {method.fee === 0 && (
-                                <Badge variant="outline" className="text-green-600">
-                                  Sem taxa
-                                </Badge>
-                              )}
-                            </div>
+                            )}
                           </div>
                         </div>
-                        
-                        <div className="flex items-center space-x-2">
+                        <div className="flex gap-2">
                           <Button
-                            variant="outline"
                             size="sm"
+                            variant="outline"
                             onClick={() => handleEditMethod(method)}
                           >
-                            <Edit className="h-3 w-3" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button
-                            variant="outline"
                             size="sm"
+                            variant="outline"
                             onClick={() => handleDeleteMethod(method.id)}
-                            className="text-red-600 hover:text-red-700"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              ))
+                  </div>
+                ))}
+              </div>
             )}
           </div>
+
+          {/* Add Button */}
+          {!showAddForm && (
+            <Button 
+              onClick={() => setShowAddForm(true)}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Forma de Pagamento
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -351,3 +305,4 @@ const PaymentMethodManager = ({ onClose }) => {
 };
 
 export default PaymentMethodManager;
+
