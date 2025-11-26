@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Calculator } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 import dataService from '@/services/dataService';
 
 const SimpleTransactionFormWorking = ({ type, onSubmit, onCancel, initialData = null }) => {
@@ -175,26 +175,13 @@ const SimpleTransactionFormWorking = ({ type, onSubmit, onCancel, initialData = 
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onCancel}
-              className="flex items-center"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {type === 'income' ? 'Nova Entrada' : 'Nova Despesa'}
-              </h1>
-              <p className="text-gray-600">
-                Registre uma nova {type === 'income' ? 'entrada' : 'despesa'} no sistema
-              </p>
-            </div>
-          </div>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {type === 'income' ? 'Nova Entrada' : 'Nova Despesa'}
+          </h1>
+          <p className="text-gray-600">
+            Registre uma nova {type === 'income' ? 'entrada' : 'despesa'} no sistema
+          </p>
         </div>
 
         {/* Form */}

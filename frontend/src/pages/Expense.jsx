@@ -9,7 +9,6 @@ import {
   DollarSign, 
   CreditCard, 
   Calendar,
-  ArrowLeft,
   Plus,
   BarChart3,
   AlertTriangle
@@ -95,18 +94,6 @@ const Expense = ({ onNavigate }) => {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="mb-6">
-            <Button
-              variant="outline"
-              onClick={handleFormCancel}
-              className="mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar para Despesas
-            </Button>
-          </div>
-
           <SimpleTransactionFormWorking
             type="expense"
             onSubmit={handleFormSubmit}

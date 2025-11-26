@@ -41,6 +41,7 @@ import {
   LogOut
 } from 'lucide-react';
 import dataService from '@/services/dataService';
+import { generateFinancialReportPDF } from '@/utils/pdfExporter';
 
 const Dashboard = ({ onNavigate }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
@@ -127,66 +128,11 @@ const Dashboard = ({ onNavigate }) => {
     }).format(value);
   };
 
-  const handleExportCSV = () => {
+  const handleExportPDF = () => {
     try {
-      // Obter dados de receitas, despesas e contas a receber
-      const income = JSON.parse(localStorage.getItem('lupa_income') || '[]');
-      const expenses = JSON.parse(localStorage.getItem('lupa_expenses') || '[]');
-      const receivables = JSON.parse(localStorage.getItem('lupa_receivables') || '[]');
-
-      // Calcular totais
-      const totalIncome = income.reduce((sum, item) => sum + (item.amount || 0), 0);
-      const totalExpenses = expenses.reduce((sum, item) => sum + (item.amount || 0), 0);
-      const totalReceivables = receivables.reduce((sum, item) => sum + (item.remaining_amount || 0), 0);
-      const netProfit = totalIncome - totalExpenses;
-
-      // Criar conteúdo do CSV
-      let csvContent = 'Relatório Financeiro LuPA\n';
-      csvContent += `Data de Exportação: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
-      
-      csvContent += 'RESUMO FINANCEIRO\n';
-      csvContent += 'Descrição,Valor\n';
-      csvContent += `Receita Total,"R$ ${totalIncome.toFixed(2).replace('.', ',')}"`;
-      csvContent += `\nDespesas Totais,"R$ ${totalExpenses.toFixed(2).replace('.', ',')}"`;
-      csvContent += `\nContas a Receber,"R$ ${totalReceivables.toFixed(2).replace('.', ',')}"`;
-      csvContent += `\nLucro Líquido,"R$ ${netProfit.toFixed(2).replace('.', ',')}"`;
-      csvContent += `\nMargem de Lucro,"${((netProfit / totalIncome) * 100 || 0).toFixed(2).replace('.', ',')}%"`;
-      
-      csvContent += '\n\nDETALHES DE RECEITAS\n';
-      csvContent += 'Descrição,Valor,Categoria,Forma de Pagamento,Data\n';
-      income.forEach(item => {
-        csvContent += `"${item.description || ''}","R$ ${(item.amount || 0).toFixed(2).replace('.', ',')}","${item.category || ''}","${item.payment_method || ''}","${item.date || ''}"`;
-        csvContent += '\n';
-      });
-      
-      csvContent += '\nDETALHES DE DESPESAS\n';
-      csvContent += 'Descrição,Valor,Categoria,Forma de Pagamento,Data\n';
-      expenses.forEach(item => {
-        csvContent += `"${item.description || ''}","R$ ${(item.amount || 0).toFixed(2).replace('.', ',')}","${item.category || ''}","${item.payment_method || ''}","${item.date || ''}"`;
-        csvContent += '\n';
-      });
-      
-      csvContent += '\nDETALHES DE CONTAS A RECEBER\n';
-      csvContent += 'Cliente,Valor Original,Valor Pendente,Status,Data de Vencimento,Tipo\n';
-      receivables.forEach(item => {
-        csvContent += `"${item.customer_name || ''}","R$ ${(item.original_amount || 0).toFixed(2).replace('.', ',')}","R$ ${(item.remaining_amount || 0).toFixed(2).replace('.', ',')}","${item.status || ''}","${item.due_date || ''}","${item.type || ''}"`;
-        csvContent += '\n';
-      });
-
-      // Criar blob e fazer download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      
-      link.setAttribute('href', url);
-      link.setAttribute('download', `relatorio_financeiro_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      generateFinancialReportPDF(dashboardData);
     } catch (error) {
-      console.error('Erro ao exportar CSV:', error);
+      console.error('Erro ao exportar PDF:', error);
       alert('Erro ao exportar relatório. Tente novamente.');
     }
   };
@@ -302,9 +248,9 @@ const Dashboard = ({ onNavigate }) => {
               Atualizar
             </Button>
             
-            <Button size="sm" onClick={handleExportCSV}>
+            <Button size="sm" onClick={handleExportPDF}>
               <Download className="h-4 w-4 mr-2" />
-              Exportar
+              Exportar PDF
             </Button>
           </div>
         </div>
