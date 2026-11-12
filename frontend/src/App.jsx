@@ -7,6 +7,7 @@ import Income from './pages/Income';
 import Expense from './pages/Expense';
 import BillPayment from './pages/BillPayment';
 import AccountsReceivable from './pages/AccountsReceivable';
+import AIReports from './pages/AIReports';
 import './App.css';
 import './styles/lupa-theme.css';
 
@@ -16,7 +17,6 @@ const App = () => {
   // Make navigation function available globally
   window.navigateTo = setCurrentPage;
 
-  // Render the appropriate page based on current state
   switch (currentPage) {
     case 'login':
       return <LoginPage onNavigate={setCurrentPage} />;
@@ -30,6 +30,8 @@ const App = () => {
       return <BillPayment onNavigate={setCurrentPage} />;
     case 'receivables':
       return <AccountsReceivable onNavigate={setCurrentPage} />;
+    case 'aireports':
+      return <AIReports onNavigate={setCurrentPage} />;
     case 'dashboard':
       return <Dashboard onNavigate={setCurrentPage} />;
     case 'landing':
@@ -39,4 +41,3 @@ const App = () => {
 };
 
 export default App;
-

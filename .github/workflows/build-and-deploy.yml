@@ -1,0 +1,57 @@
+name: Build Frontend MVP & Deploy
+
+on:
+  push:
+    branches:
+      - branch-3
+      - main
+    paths-ignore:
+      - 'backend/src/static/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Frontend Dependencies & Build Production Bundle
+        working-directory: frontend
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+
+      - name: Update Flask Static Bundle (backend/src/static)
+        run: |
+          rm -rf backend/src/static/*
+          mkdir -p backend/src/static
+          cp -r frontend/dist/* backend/src/static/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/src/static
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(build): update compiled frontend bundle in backend/src/static [skip ci]"
+            git push
+          fi
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+      - name: Deploy to GitHub Pages
+        continue-on-error: true
+        uses: actions/deploy-pages@v4

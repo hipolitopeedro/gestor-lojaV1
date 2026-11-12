@@ -1,139 +1,98 @@
-# 📊 Sistema de Gestão Financeira LuPA - Projeto Interdisciplinar
+# Sistema de Gestão Financeira LuPA (MVP)
 
-O **LuPA** (Lucro e Performance em Análise) é um sistema completo de gestão financeira, criado para ajudar pequenas e médias empresas. Com ele, é possível ver em tempo real as finanças, gerenciar transações e analisar a performance do negócio por uma interface web super intuitiva.
+O **LuPA** (*Lucro e Performance em Análise*) é um sistema web completo de gestão financeira para pequenas e médias empresas (PMEs), desenvolvido como MVP funcional com suporte a análise de fluxo de caixa, conciliação de taxas de maquininha/cartão, contas a pagar/receber, geração de relatórios executivos em PDF e diagnóstico financeiro assistido por IA.
 
------
+> **Demo Online Interativa (GitHub Pages):** [https://hipolitopeedro.github.io/gestor-lojaV1/](https://hipolitopeedro.github.io/gestor-lojaV1/)
+> *(Pré-carregado com dados realistas de demonstração — todas as alterações ficam salvas localmente no navegador e podem ser redefinidas a qualquer momento pelo botão **"Restaurar Demo"** no topo do Dashboard).*
 
-## 🚀 Funcionalidades
+---
 
-### **Frontend (React + Tailwind CSS)**
+## Principais Funcionalidades do MVP
 
-  * **Dashboard Responsivo** - Uma visão geral completa das finanças com gráficos e as métricas mais importantes.
-  * **Menu Fixo no Topo** - Acesso rápido às funções principais (Receitas, Despesas, Contas a Pagar e a Receber).
-  * **Gráficos em Tempo Real** - Acompanhe a evolução financeira, veja para onde o dinheiro está indo e as transações do dia.
-  * **Funciona em qualquer tela** - Otimizado para funcionar tanto no computador quanto no celular.
-  * **Visual Moderno** - Um design limpo, com a cor roxa como marca principal e um contraste melhorado para facilitar a leitura.
+### Frontend (React 19 + Vite + Tailwind CSS + Recharts)
+* **Dashboard Executivo em Tempo Real**:
+  * Indicadores principais (KPIs): Receita Total, Despesas Totais, Lucro Líquido, Margem de Lucro, Clientes Ativos, Contas Pendentes e Recebíveis em Atraso.
+  * **4 Visões Gráficas Interativas**:
+    1. *Evolução Mensal* (Receitas vs. Despesas vs. Lucro nos últimos 6 meses).
+    2. *Categorias de Despesas* (Gráfico de pizza + detalhamento percentual por centro de custo).
+    3. *Formas de Pagamento* (Distribuição por PIX, Cartão de Crédito/Débito, Dinheiro e Boleto).
+    4. *Fluxo Diário* (Entradas e saídas dos últimos 7 dias).
+* **Gestão de Entradas e Despesas (CRUD Completo)**:
+  * Cálculo automático de taxas de cartão/maquininha (valor bruto, taxa percentual descontada e valor líquido).
+  * Filtros dinâmicos por busca textual, categoria, forma de pagamento, período e faixa de valor.
+  * Edição e exclusão em tempo real com recálculo imediato de métricas.
+* **Contas a Pagar (`Bills`)**:
+  * Controle de vencimentos, alertas de contas atrasadas, filtros por fornecedor/categoria e baixa rápida de pagamentos.
+* **Contas a Receber (`Accounts Receivable`)**:
+  * Gestão de vendas a prazo (*Fiado*), recebíveis de maquininha e faturas/boletos.
+  * Suporte a pagamentos parciais (abatimento automático de saldo devedor) e histórico de amortizações por cliente.
+* **Relatórios Inteligentes (Diagnóstico IA)**:
+  * Geração de diagnósticos financeiros completos (Geral, Receitas, Despesas ou Fluxo de Caixa) com análise de margem líquida, impacto de taxas de meios de pagamento, inadimplência e plano de ação recomendado, com exportação em Markdown (`.md`).
+* **Exportação de Relatório Executivo em PDF**:
+  * Geração instantânea no cliente (`jsPDF` + `jspdf-autotable`) com resumo financeiro consolidado, tabelas de transações, contas a pagar e contas a receber.
 
-### **Backend (Flask + Python)**
+### Backend (Python + Flask + SQLAlchemy)
+* **API RESTful Modular**: Blueprints dedicados para Autenticação (`/api/auth`), Transações (`/api/transactions`), Contas a Pagar (`/api/bills`), Contas a Receber (`/api/receivables`) e Relatórios IA (`/api/ai/reports`).
+* **Servimento Unificado (SPA)**: O servidor Flask serve automaticamente o bundle de produção compilado em `backend/src/static/`, permitindo rodar toda a aplicação em uma única porta (`http://localhost:5000`).
 
-  * **Autenticação Simplificada** - Um sistema de login direto, focado na demonstração do projeto.
-  * **API RESTful** - Endpoints bem definidos para todas as operações financeiras.
-  * **Gestão de Transações** - Todas as operações de Criar, Ler, Atualizar e Deletar (CRUD) registros financeiros.
-  * **Contas a Pagar** - Gerencie pagamentos recorrentes e não perca os vencimentos.
-  * **Contas a Receber** - Acompanhe o que seus clientes precisam pagar.
+---
 
------
-
-## 🎨 Sistema de Design
-
-### **Paleta de Cores**
-
-  * **Fundo:** `#f5f3ff` (Lavanda claro)
-  * **Cor Principal:** `#8b5cf6` (Roxo)
-  * **Sucesso/Lucros:** `#34d399` (Verde)
-  * **Despesas:** `#fb7185` (Coral)
-  * **Neutro:** `#fb923c` (Laranja)
-  * **Texto:** Preto, para garantir a melhor leitura possível.
-
-### **Principais Melhorias na Interface**
-
-  * **Menu Fixo:** As ações rápidas estão sempre visíveis no topo.
-  * **Contraste Melhorado:** Texto preto sobre fundos claros para facilitar a leitura.
-  * **Botões Menores:** Design mais compacto para aproveitar melhor o espaço.
-  * **Layout Flexível:** Se adapta de 4 colunas (desktop) para 2 colunas (celular).
-
------
-
-## 🛠️ Tecnologias Usadas
-
-### **Frontend**
-
-  * **React 19** - A versão mais moderna do React, com hooks e context.
-  * **Vite** - Ferramenta super rápida para rodar e construir o projeto.
-  * **Tailwind CSS** - Framework CSS que agiliza muito a estilização.
-  * **Shadcn/UI** - Biblioteca de componentes de alta qualidade.
-  * **Recharts** - Para criar gráficos bonitos e responsivos.
-  * **Lucide React** - Biblioteca de ícones modernos.
-
-### **Backend**
-
-  * **Flask** - Framework web leve em Python.
-  * **SQLAlchemy** - ORM para conversar com o banco de dados.
-  * **Flask-CORS** - Para permitir a comunicação entre o front e o back.
-  * **Python 3.11** - Usando as features mais recentes do Python.
-
------
-
-## 📁 Estrutura do Projeto
+## Estrutura do Repositório
 
 ```plaintext
-lupa-financial-system/
-├── frontend/                 # Aplicação frontend em React
+gestor-lojaV1/
+├── .github/workflows/
+│   └── build-and-deploy.yml  # Pipeline CI/CD: compila o frontend, atualiza backend/src/static e publica no GitHub Pages
+├── frontend/                 # Aplicação SPA em React 19 + Vite + Tailwind CSS
 │   ├── src/
-│   │   ├── components/      # Componentes reutilizáveis (botões, cards, etc.)
-│   │   ├── pages/          # As páginas principais do sistema
-│   │   ├── contexts/       # Para compartilhar estado global
-│   │   ├── styles/         # CSS customizado e temas
-│   │   └── lib/           # Funções úteis
+│   │   ├── components/       # Formulários, listagens, gerenciador de taxas e componentes Shadcn/UI
+│   │   ├── pages/            # Dashboard, Income, Expense, Bills, AccountsReceivable, AIReports
+│   │   ├── services/         # dataService.js (persistência local + seed de dados demo realistas)
+│   │   └── utils/            # pdfExporter.js (gerador de relatórios PDF executivos)
 │   ├── package.json
 │   └── vite.config.js
-├── backend/                 # API backend em Flask
+├── backend/                  # API RESTful em Python/Flask + SQLite (SQLAlchemy)
 │   ├── src/
-│   │   ├── routes/         # As rotas da API (endpoints)
-│   │   ├── models/         # Os modelos do banco de dados
-│   │   ├── utils/          # Funções de ajuda
-│   │   └── static/         # Arquivos do frontend (após o build)
-│   ├── requirements.txt
-│   └── main.py
+│   │   ├── models/           # Modelos relacionais (User, Transaction, Bill, Receivable, Customer)
+│   │   ├── routes/           # Endpoints REST (/api/*)
+│   │   ├── static/           # Bundle de produção do React servido pelo Flask
+│   │   └── main.py           # Ponto de entrada da aplicação Flask
+│   └── requirements.txt
 └── README.md
 ```
 
------
+---
 
-## 🚀 Como Começar
+## Como Executar Localmente
 
-### **Pré-requisitos**
-
-  * Node.js 20+ e npm/pnpm
-  * Python 3.11+
-  * Git
-
-
-### **Configurando o Backend**
-
-```bash
-cd backend
-python -m venv venv
-source venv/Scripts/activate
-pip install -r requirements.txt
-mkdir src/database
-python src/main.py
-```
-
-### **Gerando a Versão de Produção (para deploy)**
+### Opção 1: Executar apenas o Frontend (Modo MVP / Apresentação Rápida)
 
 ```bash
 cd frontend
 npm install --legacy-peer-deps
 npm run dev
 ```
+Acesse `http://localhost:5173`. O sistema carregará automaticamente a base de demonstração completa.
 
------
+### Opção 2: Executar Full-Stack (Flask servindo API + Frontend Compilado)
 
-## 📈 Principais Métricas Analisadas
+```bash
+cd backend
+python -m venv venv
+# No Windows:
+venv\Scripts\activate
+# No Linux/macOS:
+source venv/bin/activate
 
-  * **Receita Total** - Acompanhamento completo do que entra.
-  * **Despesas Totais** - Gestão total do que sai.
-  * **Lucro Líquido** - Cálculos de lucro em tempo real.
-  * **Margem de Lucro** - A porcentagem de performance do negócio.
-  * **Clientes Ativos** - Acompanhamento de clientes.
-  * **Contas Pendentes** - Gestão de datas de vencimento.
-  * **Pagamentos Atrasados** - O que ainda não foi recebido.
-  * **Crescimento Mensal** - Análise de tendência da performance.
+pip install -r requirements.txt
+python src/main.py
+```
+Acesse `http://localhost:5000`.
 
------
+---
 
-## 🤝 Contribuição
+## Tecnologias Utilizadas
 
-Este é um projeto acadêmico para a matéria de Projeto Interdisciplinar (PIN).
-
+* **Frontend**: React 19, Vite 6, Tailwind CSS 4, Radix UI / Shadcn, Recharts, Lucide Icons, jsPDF & jsPDF-AutoTable.
+* **Backend**: Python 3.11+, Flask 3, Flask-SQLAlchemy, Flask-CORS, PyJWT, ReportLab.
+* **CI/CD**: GitHub Actions (Build automatizado do React + atualização de estáticos + deploy no GitHub Pages).

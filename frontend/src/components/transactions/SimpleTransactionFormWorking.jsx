@@ -123,8 +123,13 @@ const SimpleTransactionFormWorking = ({ type, onSubmit, onCancel, initialData = 
         net_amount: netAmount
       };
 
-      // Save transaction using dataService
-      const savedTransaction = await dataService.saveTransaction(submitData);
+      // Save or update transaction using dataService
+      let savedTransaction;
+      if (initialData && initialData.id) {
+        savedTransaction = await dataService.updateTransaction(initialData.id, submitData);
+      } else {
+        savedTransaction = await dataService.saveTransaction(submitData);
+      }
       
       // Call the parent onSubmit callback if provided
       if (onSubmit) {
@@ -177,10 +182,14 @@ const SimpleTransactionFormWorking = ({ type, onSubmit, onCancel, initialData = 
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
-            {type === 'income' ? 'Nova Entrada' : 'Nova Despesa'}
+            {initialData && initialData.id
+              ? (type === 'income' ? 'Editar Entrada' : 'Editar Despesa')
+              : (type === 'income' ? 'Nova Entrada' : 'Nova Despesa')}
           </h1>
           <p className="text-gray-600">
-            Registre uma nova {type === 'income' ? 'entrada' : 'despesa'} no sistema
+            {initialData && initialData.id
+              ? `Atualize os dados da ${type === 'income' ? 'entrada' : 'despesa'} selecionada`
+              : `Registre uma nova ${type === 'income' ? 'entrada' : 'despesa'} no sistema`}
           </p>
         </div>
 

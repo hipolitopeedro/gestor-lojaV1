@@ -12,6 +12,7 @@ from src.routes.auth import auth_bp
 from src.routes.transactions import transactions_bp
 from src.routes.bills import bills_bp
 from src.routes.receivables import receivables_bp
+from src.routes.ai_reports import ai_reports_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
@@ -25,9 +26,12 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(transactions_bp, url_prefix='/api')
 app.register_blueprint(bills_bp, url_prefix='/api')
 app.register_blueprint(receivables_bp, url_prefix='/api')
+app.register_blueprint(ai_reports_bp, url_prefix='/api')
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
+db_dir = os.path.join(os.path.dirname(__file__), 'database')
+os.makedirs(db_dir, exist_ok=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(db_dir, 'app.db')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 

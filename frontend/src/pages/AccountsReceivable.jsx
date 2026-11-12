@@ -220,10 +220,10 @@ const AccountsReceivable = ({ onNavigate }) => {
   });
 
   const handleAddPayment = (receivableId, amount, paymentMethod, notes) => {
-    setReceivables(receivables.map(r => {
+    const updatedReceivables = receivables.map(r => {
       if (r.id === receivableId) {
         const newPaidAmount = r.paid_amount + amount;
-        const newRemainingAmount = r.original_amount - newPaidAmount;
+        const newRemainingAmount = Math.max(0, r.original_amount - newPaidAmount);
         const newPayment = {
           id: Date.now(),
           amount,
@@ -237,6 +237,7 @@ const AccountsReceivable = ({ onNavigate }) => {
           paid_amount: newPaidAmount,
           remaining_amount: newRemainingAmount,
           status: newRemainingAmount <= 0 ? 'paid' : 'partial',
+          is_overdue: newRemainingAmount <= 0 ? false : r.is_overdue,
           last_payment_date: new Date().toISOString().split('T')[0],
           payments: [...(r.payments || []), newPayment]
         };
@@ -244,8 +245,11 @@ const AccountsReceivable = ({ onNavigate }) => {
         return updated;
       }
       return r;
-    }));
+    });
     
+    setReceivables(updatedReceivables);
+    saveReceivables(updatedReceivables);
+    updateSummary(updatedReceivables);
     setShowAddPayment(false);
     setSelectedReceivable(null);
   };

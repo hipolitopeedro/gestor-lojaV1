@@ -26,7 +26,9 @@ const Income = ({ onNavigate }) => {
     transactionCount: 0,
     averageTransaction: 0,
     topCategory: 'N/A',
-    topPaymentMethod: 'N/A'
+    topCategoryPct: 0,
+    topPaymentMethod: 'N/A',
+    topPaymentMethodPct: 0
   });
 
   // Load summary data from dataService
@@ -40,10 +42,12 @@ const Income = ({ onNavigate }) => {
       setSummaryData({
         totalIncome: dashboardData.totalRevenue,
         monthlyGrowth: dashboardData.monthlyGrowth,
-        transactionCount: dashboardData.transactionCount,
-        averageTransaction: dashboardData.averageTransaction,
-        topCategory: dashboardData.topCategory,
-        topPaymentMethod: dashboardData.topPaymentMethod
+        transactionCount: dashboardData.incomeTransactionCount || dashboardData.transactionCount,
+        averageTransaction: dashboardData.averageIncome || dashboardData.averageTransaction,
+        topCategory: dashboardData.topIncomeCategory || dashboardData.topCategory,
+        topCategoryPct: dashboardData.topIncomeCategoryPct || 0,
+        topPaymentMethod: dashboardData.topPaymentMethod,
+        topPaymentMethodPct: dashboardData.topPaymentMethodPct || 0
       });
     } catch (error) {
       console.error('Error loading summary data:', error);
@@ -175,7 +179,7 @@ const Income = ({ onNavigate }) => {
               </Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0%</div>
+              <div className="text-2xl font-bold">{summaryData.topCategoryPct}%</div>
               <p className="text-xs text-muted-foreground">
                 do total de entradas
               </p>
@@ -190,7 +194,7 @@ const Income = ({ onNavigate }) => {
               </Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0%</div>
+              <div className="text-2xl font-bold">{summaryData.topPaymentMethodPct}%</div>
               <p className="text-xs text-muted-foreground">
                 das transações
               </p>

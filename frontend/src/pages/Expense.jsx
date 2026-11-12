@@ -25,6 +25,7 @@ const Expense = ({ onNavigate }) => {
     transactionCount: 0,
     averageTransaction: 0,
     topCategory: 'N/A',
+    topCategoryPct: 0,
     topPaymentMethod: 'N/A',
     totalFees: 0
   });
@@ -40,11 +41,12 @@ const Expense = ({ onNavigate }) => {
       setSummaryData({
         totalExpenses: dashboardData.totalExpenses,
         monthlyGrowth: dashboardData.monthlyGrowth,
-        transactionCount: dashboardData.transactionCount,
-        averageTransaction: dashboardData.averageTransaction,
-        topCategory: dashboardData.topCategory,
+        transactionCount: dashboardData.expenseTransactionCount || dashboardData.transactionCount,
+        averageTransaction: dashboardData.averageExpense || dashboardData.averageTransaction,
+        topCategory: dashboardData.topExpenseCategory || dashboardData.topCategory,
+        topCategoryPct: dashboardData.topExpenseCategoryPct || 0,
         topPaymentMethod: dashboardData.topPaymentMethod,
-        totalFees: 0 // TODO: Calculate total fees paid
+        totalFees: dashboardData.totalFeesPaid || 0
       });
     } catch (error) {
       console.error('Error loading summary data:', error);
@@ -176,7 +178,7 @@ const Expense = ({ onNavigate }) => {
               </Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0%</div>
+              <div className="text-2xl font-bold">{summaryData.topCategoryPct}%</div>
               <p className="text-xs text-muted-foreground">
                 do total de despesas
               </p>
@@ -193,7 +195,7 @@ const Expense = ({ onNavigate }) => {
                 {formatCurrency(summaryData.totalFees)}
               </div>
               <p className="text-xs text-muted-foreground">
-                0% do total gasto
+                em taxas de cartão
               </p>
             </CardContent>
           </Card>
